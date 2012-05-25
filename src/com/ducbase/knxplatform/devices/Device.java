@@ -9,6 +9,7 @@ public abstract class Device {
 	
 	private String name;
 	private String description;
+	private State state;
 	
 	public String getName() {
 		return name;
@@ -22,12 +23,11 @@ public abstract class Device {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	public Object getStatus() {
-		return status;
-	}
-	public void setStatus(Object status) {
-		this.status = status;
-	}
-	private Object status;
+	abstract public State getState();
+	abstract public void setState(State state);
 
+	public String toString() {
+		return "Device: " + name;
+	}
+	
 }

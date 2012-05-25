@@ -1,0 +1,14 @@
+ {
+ 	 devices: [
+ 	 	 {
+ 	 	 	 name: "Buitentemperatuur",
+ 	 	 	 type: "temperature",
+ 	 	 	 state: "knx 2/6/1"
+ 	 	 },
+ 	 	 {
+ 	 	 	 name: "Temperatuur Woonkamer",
+ 	 	 	 type: "temperature",
+ 	 	 	 state: "knx 2/1/0"
+ 	 	 }
+ 	 ]
+}
