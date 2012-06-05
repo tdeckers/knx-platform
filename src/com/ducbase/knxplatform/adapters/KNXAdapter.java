@@ -13,7 +13,9 @@ import java.util.logging.Logger;
 
 import tuwien.auto.calimero.CloseEvent;
 import tuwien.auto.calimero.FrameEvent;
+import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.cemi.CEMILData;
+import tuwien.auto.calimero.dptxlator.DPT;
 import tuwien.auto.calimero.dptxlator.DPTXlator2ByteFloat;
 import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
 import tuwien.auto.calimero.exception.KNXException;
@@ -28,6 +30,7 @@ import tuwien.auto.calimero.process.ProcessCommunicatorImpl;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
 
 import com.ducbase.knxplatform.config.DeviceConfig;
 import com.ducbase.knxplatform.config.DevicesConfig;
@@ -62,6 +65,8 @@ public class KNXAdapter {
 	 * a KNXAdapter maintains a cache of group address states.  Mainly for those group addresses used for Device state's.
 	 */
 	private Cache cache;
+
+	private KNXMonitor monitor;
 	
 	/**
 	 * Create a KNXAdapter
@@ -104,74 +109,36 @@ public class KNXAdapter {
 	 * Start the adapter operation
 	 */
 	public void start() {
-		// connect to KNX, monitor connection
-		
 		// start cache
 		logger.fine("Creating cache");
 		CacheManager cacheMgr = CacheManager.create();
 		cacheMgr.addCache(CACHE_NAME);
 		cache = cacheMgr.getCache(CACHE_NAME);
+
+		// connect to KNX, monitor connection
+		// updates are added in the cache (passed as reference)
+		monitor = new KNXMonitor(this);
+		monitor.start();
+		
+		
 		
 		// continuously update cache
 		
 	}
 
-	class Connection {
-		
-		Connection() throws UnknownHostException, KNXException  {
-			KNXNetworkLink link = new KNXNetworkLinkIP(
-					KNXNetworkLinkIP.TUNNEL, 
-					new InetSocketAddress(InetAddress.getByName("192.168.2.102"), 0), 
-					new InetSocketAddress(InetAddress.getByName("192.168.2.150"), KNXnetIPConnection.IP_PORT), 
-					false, 
-					new TPSettings(false));
-			ProcessCommunicator pc = new ProcessCommunicatorImpl(link);
-			link.addLinkListener(new NetworkLinkListener() {
-				
-				public void linkClosed(CloseEvent e) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				public void indication(FrameEvent e) {
-					CEMILData data = (CEMILData) e.getFrame();
-					System.out.println("Data: " + data);
-					byte[] tpdu = data.getPayload();
-					
-					if (data.getDestination().toString().startsWith("2/1/") || data.getDestination().toString().startsWith("2/6/")) {
-						DPTXlator2ByteFloat tempXlate = null;
-						try {
-							tempXlate = new DPTXlator2ByteFloat(DPTXlator2ByteFloat.DPT_TEMPERATURE);
-						} catch (KNXFormatException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						tempXlate.setData(tpdu, 2);
-						System.out.println("TEMP: " + tempXlate.getValueFloat() + " " + DPTXlator2ByteFloat.DPT_TEMPERATURE.getUnit());
-					  
-					}
-					
-					DPTXlatorBoolean xlate = null;
-					try {
-						xlate = new DPTXlatorBoolean(DPTXlatorBoolean.DPT_SWITCH);
-					} catch (KNXFormatException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					xlate.setData(tpdu, 1);
-					
-					System.out.println(data.getSource() + " -- " 
-							+ xlate.getValue() + " --> " 
-							+ data.getDestination());
-					
-				}
-				
-				public void confirmation(FrameEvent e) {
-					// TODO Auto-generated method stub
-					
-				}
-			});
-		}
+	/**
+	 * add KNX group address updates to cache
+	 * 
+	 * @param groupAddress a String object representing the group address 
+	 * @param value the String value of the group addresss
+	 * @param dpt the DPT object, describing the type of the group address
+	 */
+	public void deviceUpdate(String groupAddress, String value, DPT dpt) {
+		logger.fine("Updating cache for " + groupAddress);
+		Element valueElement = new Element(groupAddress, dpt);
+		cache.put(valueElement);		
+		Element typeElement = new Element(groupAddress + "_dpt", dpt);
+		cache.put(typeElement);
 		
 	}
 	
