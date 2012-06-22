@@ -14,4 +14,10 @@
         <servlet-name>Jersey REST Service</servlet-name>
         <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
+    <listener>
+        <listener-class>com.ducbase.knxplatform.WebContainerStartup</listener-class>
+    </listener>
+    <listener>
+  		<listener-class>net.sf.ehcache.constructs.web.ShutdownListener</listener-class>
+	</listener>
 </web-app>

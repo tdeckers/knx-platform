@@ -23,6 +23,8 @@ import tuwien.auto.calimero.link.event.NetworkLinkListener;
 import tuwien.auto.calimero.link.medium.TPSettings;
 import tuwien.auto.calimero.process.ProcessCommunicator;
 import tuwien.auto.calimero.process.ProcessCommunicatorImpl;
+import tuwien.auto.calimero.process.ProcessEvent;
+import tuwien.auto.calimero.process.ProcessListener;
 import net.sf.ehcache.Cache;
 
 public class KNXMonitor extends Thread {
@@ -33,21 +35,9 @@ public class KNXMonitor extends Thread {
 
 	public KNXMonitor(KNXAdapter adapter) {
 		this.adapter = adapter;
-		try {
-			Connection con = new Connection();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (KNXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 	}
 
-	public void run() {
-		
-	}
-	
 	
 	class Connection {
 

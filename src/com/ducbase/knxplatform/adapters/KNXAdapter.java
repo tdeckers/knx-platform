@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import tuwien.auto.calimero.CloseEvent;
 import tuwien.auto.calimero.FrameEvent;
+import tuwien.auto.calimero.GroupAddress;
 import tuwien.auto.calimero.IndividualAddress;
 import tuwien.auto.calimero.cemi.CEMILData;
 import tuwien.auto.calimero.dptxlator.DPT;
@@ -20,7 +21,9 @@ import tuwien.auto.calimero.dptxlator.DPTXlator2ByteFloat;
 import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
 import tuwien.auto.calimero.exception.KNXException;
 import tuwien.auto.calimero.exception.KNXFormatException;
+import tuwien.auto.calimero.exception.KNXTimeoutException;
 import tuwien.auto.calimero.knxnetip.KNXnetIPConnection;
+import tuwien.auto.calimero.link.KNXLinkClosedException;
 import tuwien.auto.calimero.link.KNXNetworkLink;
 import tuwien.auto.calimero.link.KNXNetworkLinkIP;
 import tuwien.auto.calimero.link.event.NetworkLinkListener;
@@ -31,6 +34,7 @@ import tuwien.auto.calimero.process.ProcessCommunicatorImpl;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.config.CacheConfiguration;
 
 import com.ducbase.knxplatform.config.DeviceConfig;
 import com.ducbase.knxplatform.config.DevicesConfig;
@@ -58,8 +62,14 @@ public class KNXAdapter {
 
 	static Logger logger = Logger.getLogger(KNXAdapter.class.getName());
 	
+	private KNXNetworkLink link;	
+	
 	static final String CACHE_NAME = "knx-cache";
 	List<String> groupAddresses = new ArrayList<String>();
+	
+	public boolean started = false;
+	
+	
 	
 	/**
 	 * a KNXAdapter maintains a cache of group address states.  Mainly for those group addresses used for Device state's.
@@ -74,56 +84,86 @@ public class KNXAdapter {
 	 * TODO: make singleton
 	 */
 	public KNXAdapter() {
+		
 		// TODO: centralize reading from config and configuring system... this to catch config issue in one place.
 		
-		FileReader reader = null;
-		try {
-			// Create reader for config file
-			reader = new FileReader("devices.json");
-		} catch (FileNotFoundException e) {
-
-			e.printStackTrace();
-		}
-				
-		// Using Google Gson for parsing.
-		Gson json = new Gson();
-		// Map JSON file to DevicesConfig object
-		DevicesConfig config = json.fromJson(reader, DevicesConfig.class);
-		logger.finest("Devices configured: " + config.devices.length);
-
-		for(DeviceConfig device: config.devices) {
-			logger.finest("Configuring device: " + device.name);
-			StringTokenizer t = new StringTokenizer(device.state);
-			String adapter = t.nextToken();
-			logger.finest("Adapter: " + adapter );
-			String groupAddress = t.nextToken();
-			logger.finest("Group address: " + groupAddress);
-
-			// Add group address to list to monitor.
-			groupAddresses.add(groupAddress);
-		}
-		
+//		FileReader reader = null;
+//		try {
+//			// Create reader for config file
+//			reader = new FileReader("devices.json");
+//		} catch (FileNotFoundException e) {
+//
+//			e.printStackTrace();
+//		}
+//				
+//		// Using Google Gson for parsing.
+//		Gson json = new Gson();
+//		// Map JSON file to DevicesConfig object
+//		DevicesConfig config = json.fromJson(reader, DevicesConfig.class);
+//		logger.finest("Devices configured: " + config.devices.length);
+//
+//		for(DeviceConfig device: config.devices) {
+//			logger.finest("Configuring device: " + device.name);
+//			StringTokenizer t = new StringTokenizer(device.state);
+//			String adapter = t.nextToken();
+//			logger.finest("Adapter: " + adapter );
+//			String groupAddress = t.nextToken();
+//			logger.finest("Group address: " + groupAddress);
+//
+//			// Add group address to list to monitor.
+//			groupAddresses.add(groupAddress);
+//		}
+//		
 	}
 	
 	/**
 	 * Start the adapter operation
 	 */
 	public void start() {
+		logger.info("Starting KNX Adapter");
 		// start cache
 		logger.fine("Creating cache");
 		CacheManager cacheMgr = CacheManager.create();
-		cacheMgr.addCache(CACHE_NAME);
-		cache = cacheMgr.getCache(CACHE_NAME);
+		
+		Cache cache = new Cache(
+				new CacheConfiguration(CACHE_NAME, 1000)
+					.overflowToDisk(false)
+					.diskPersistent(false));
+		
+		
+		cacheMgr.addCache(cache);
 
-		// connect to KNX, monitor connection
-		// updates are added in the cache (passed as reference)
-		monitor = new KNXMonitor(this);
-		monitor.start();
+		// connect to KNX
+		try {
+			link = new KNXNetworkLinkIP(
+					KNXNetworkLinkIP.TUNNEL, 					
+					new InetSocketAddress(InetAddress.getByName("192.168.2.102"), 0), 
+					new InetSocketAddress(InetAddress.getByName("192.168.2.150"), KNXnetIPConnection.IP_PORT), 
+					false, 
+					new TPSettings(false));
+		} catch (UnknownHostException | KNXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// start monitoring
+		//monitor = new KNXMonitor(this);
+		//monitor.start();
 		
 		
 		
 		// continuously update cache
 		
+		// set state
+		started = true;
+		
+	}
+	
+	public void stop() {
+		logger.info("Stopping KNX Adapter");
+		link.close();
+		
+		started = false;
 	}
 
 	/**
@@ -138,8 +178,23 @@ public class KNXAdapter {
 		Element valueElement = new Element(groupAddress, dpt);
 		cache.put(valueElement);		
 		Element typeElement = new Element(groupAddress + "_dpt", dpt);
-		cache.put(typeElement);
-		
+		cache.put(typeElement);		
+	}
+	
+	public void send(boolean value) {
+		if (! started) {
+			logger.warning("Can't send: KNX Adapter not started");
+			return;
+		}
+		try {
+			ProcessCommunicator pc = new ProcessCommunicatorImpl(link);
+			GroupAddress address = new GroupAddress("1/1/18");
+			pc.write(address, value);
+		} catch (KNXLinkClosedException | KNXFormatException | KNXTimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 	
 }
