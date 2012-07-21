@@ -1,9 +1,5 @@
 package com.ducbase.knxplatform;
 
-import java.awt.List;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;

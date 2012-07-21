@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import tuwien.auto.calimero.CloseEvent;
+import tuwien.auto.calimero.DetachEvent;
 import tuwien.auto.calimero.FrameEvent;
 import tuwien.auto.calimero.GroupAddress;
 import tuwien.auto.calimero.IndividualAddress;
@@ -30,6 +31,8 @@ import tuwien.auto.calimero.link.event.NetworkLinkListener;
 import tuwien.auto.calimero.link.medium.TPSettings;
 import tuwien.auto.calimero.process.ProcessCommunicator;
 import tuwien.auto.calimero.process.ProcessCommunicatorImpl;
+import tuwien.auto.calimero.process.ProcessEvent;
+import tuwien.auto.calimero.process.ProcessListener;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -62,7 +65,8 @@ public class KNXAdapter {
 
 	static Logger logger = Logger.getLogger(KNXAdapter.class.getName());
 	
-	private KNXNetworkLink link;	
+	private KNXNetworkLink link;
+	private ProcessCommunicator pc;
 	
 	static final String CACHE_NAME = "knx-cache";
 	List<String> groupAddresses = new ArrayList<String>();
@@ -125,7 +129,7 @@ public class KNXAdapter {
 		logger.fine("Creating cache");
 		CacheManager cacheMgr = CacheManager.create();
 		
-		Cache cache = new Cache(
+		cache = new Cache(
 				new CacheConfiguration(CACHE_NAME, 1000)
 					.overflowToDisk(false)
 					.diskPersistent(false));
@@ -141,11 +145,15 @@ public class KNXAdapter {
 					new InetSocketAddress(InetAddress.getByName("192.168.2.150"), KNXnetIPConnection.IP_PORT), 
 					false, 
 					new TPSettings(false));
-		} catch (UnknownHostException | KNXException e) {
+			ProcessCommunicator pc = new ProcessCommunicatorImpl(link);
+			pc.addProcessListener(new KNXProcessListener(this));
+
+		} catch (KNXException | UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
+	
 		// start monitoring
 		//monitor = new KNXMonitor(this);
 		//monitor.start();
@@ -161,6 +169,7 @@ public class KNXAdapter {
 	
 	public void stop() {
 		logger.info("Stopping KNX Adapter");
+		pc.detach();
 		link.close();
 		
 		started = false;
@@ -173,10 +182,11 @@ public class KNXAdapter {
 	 * @param value the String value of the group addresss
 	 * @param dpt the DPT object, describing the type of the group address
 	 */
-	public void deviceUpdate(String groupAddress, String value, DPT dpt) {
+	public void deviceUpdate(String groupAddress, String value, DPT dpt) {		
 		logger.fine("Updating cache for " + groupAddress);
-		Element valueElement = new Element(groupAddress, dpt);
+		Element valueElement = new Element(groupAddress, value);
 		cache.put(valueElement);		
+		//TODO: no need to save DPT... we'll use device definition for that.
 		Element typeElement = new Element(groupAddress + "_dpt", dpt);
 		cache.put(typeElement);		
 	}
@@ -187,7 +197,6 @@ public class KNXAdapter {
 			return;
 		}
 		try {
-			ProcessCommunicator pc = new ProcessCommunicatorImpl(link);
 			GroupAddress address = new GroupAddress("1/1/18");
 			pc.write(address, value);
 		} catch (KNXLinkClosedException | KNXFormatException | KNXTimeoutException e) {
@@ -195,6 +204,17 @@ public class KNXAdapter {
 			e.printStackTrace();
 		}
 
+	}
+	
+	/** 
+	 * TODO remove this method... temporary one.
+	 * @param groupAddress
+	 * @return
+	 */
+	public String getValueForGroupAddress(String groupAddress) {
+		Element valueEl = cache.get(groupAddress);
+		if (valueEl == null) return "";
+		return (String) valueEl.getValue();		
 	}
 	
 }

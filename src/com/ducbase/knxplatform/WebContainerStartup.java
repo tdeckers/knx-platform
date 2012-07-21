@@ -19,6 +19,7 @@ public class WebContainerStartup implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		logger.info("Context Initialized");
+		// TODO should probably set DeviceManager here instead.
 		KNXAdapter adapter = new KNXAdapter();
 		adapter.start();
 		event.getServletContext().setAttribute("adapter", adapter);
