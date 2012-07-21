@@ -27,18 +27,40 @@ public class KNXProcessListener implements ProcessListener {
 		String src = e.getSourceAddr().toString();
 		byte[] asdu = e.getASDU();
 		logger.fine(src + " -> " + dst + ": " + asdu.length);
-		if (dst.startsWith("1/1/")) {
-			this.writeBoolean(dst, asdu);
-		}
-		if(dst.startsWith("2/3/")) {
+		// Lights dimming value
+		if (dst.startsWith("1/3/")) {
 			this.writePercentage(dst, asdu);
 		}
+		// Status lights
+		if (dst.startsWith("1/4/")) {
+			this.writeBoolean(dst, asdu);
+		}
+		// Heating on/off
+		if (dst.equals("2/0/4")) {
+			this.writeBoolean(dst, asdu);			
+		}
+		// Actual temperature (rooms + outside + floor)
 		if (dst.startsWith("2/1/") || dst.startsWith("2/6/")) {
 			this.writeTemperature(dst, asdu);
 		}
+		// Setpoint temperature
+		if (dst.startsWith("2/2/")) {
+			this.writeTemperature(dst, asdu);
+		}
+		// Heating variable
+		if(dst.startsWith("2/3/")) {
+			this.writePercentage(dst, asdu);
+		}
+		// Operating mode
+		if (dst.startsWith("2/4/")) {
+			// TODO: not implemented
+		}
+		// Shutter position
+		if (dst.startsWith("3/2/")) {
+			this.writePercentage(dst, asdu);
+		}
+
 	}
-
-
 
 	@Override
 	public void detached(DetachEvent e) {
@@ -82,8 +104,7 @@ public class KNXProcessListener implements ProcessListener {
 		}
 		xlate.setData(asdu);
 		adapter.deviceUpdate(dst, xlate.getValue(), DPTXlatorBoolean.DPT_SWITCH);
-		logger.fine("SWITCH: " + xlate.getValue() + " " + DPTXlatorBoolean.DPT_SWITCH.getUnit());
-		
+		logger.fine("SWITCH: " + xlate.getValue() + " " + DPTXlatorBoolean.DPT_SWITCH.getUnit());		
 	}
 	
 }
