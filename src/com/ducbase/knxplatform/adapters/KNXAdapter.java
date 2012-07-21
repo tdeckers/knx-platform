@@ -136,12 +136,31 @@ public class KNXAdapter {
 		
 		
 		cacheMgr.addCache(cache);
-
+		
+		// find own IP address
+		InetAddress localAddress = null;
+		try {
+			String hostName = InetAddress.getLocalHost().getHostName();
+			InetAddress addrs[] = InetAddress.getAllByName(hostName);			
+			for(InetAddress addr: addrs) {
+				// TODO: hardcoding to my subnet, change to more flexible mechanism later.
+				//if( !addr.isLoopbackAddress() && addr.isSiteLocalAddress() ) {
+				if (addr.getHostAddress().startsWith("192.168.2.")) {
+					logger.fine("IP Address found: " + addr.getHostAddress());
+					localAddress = addr;
+				}
+			}
+		} catch (UnknownHostException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		logger.info("Using ip address: " + localAddress.getHostAddress());
+			
 		// connect to KNX
 		try {
 			link = new KNXNetworkLinkIP(
 					KNXNetworkLinkIP.TUNNEL, 					
-					new InetSocketAddress(InetAddress.getByName("192.168.2.102"), 0), 
+					new InetSocketAddress(localAddress, 0), 
 					new InetSocketAddress(InetAddress.getByName("192.168.2.150"), KNXnetIPConnection.IP_PORT), 
 					false, 
 					new TPSettings(false));
