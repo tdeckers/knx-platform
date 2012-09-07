@@ -2,11 +2,107 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Welcome</title>
+<title>Welcome Home</title>
 </head>
-<body>
-Welcome.<br />
-<a href="./rest/hello">Hello</a>
+<body style="font-family: Verdana; font-size: 9pt;">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script type="text/javascript">
+function updateAll() {
+	$.getJSON('./rest/knxservice/group', {'address' : '0/1/0'}, function(json) {
+		$('#al_woning_voll').text(json.value);
+	});
+	$.getJSON('./rest/knxservice/group', {'address' : '0/1/1'}, function(json) {
+		$('#al_woning_ged').text(json.value);
+	});
+	$.getJSON('./rest/knxservice/group', {'address' : '0/1/2'}, function(json) {
+		$('#al_tuin_ged').text(json.value);
+	});
+	$.getJSON('./rest/knxservice/group', {'address' : '0/1/3'}, function(json) {
+		$('#al_brand').text(json.value);
+	});
+	$.getJSON('./rest/knxservice/group', {'address' : '0/1/4'}, function(json) {
+		$('#al_alarm').text(json.value);
+	});
+	
+	
+	
+	$.getJSON('./rest/knxservice/group', {'address' : '1/4/20'}, function(json) {
+		$('#licht_bt_vooraan').text(json.value);
+	});
+
+	$.getJSON('./rest/knxservice/group', {'address' : '2/1/0'}, function(json) {
+		$('#temp_living').text(json.value);
+	});
+	$.getJSON('./rest/knxservice/group', {'address' : '2/1/1'}, function(json) {
+		$('#temp_bureau_marlies').text(json.value);
+	});	
+	$.getJSON('./rest/knxservice/group', {'address' : '2/1/2'}, function(json) {
+		$('#temp_wasplaats').text(json.value);
+	});	
+	$.getJSON('./rest/knxservice/group', {'address' : '2/1/3'}, function(json) {
+		$('#temp_entertain').text(json.value);
+	});		
+	$.getJSON('./rest/knxservice/group', {'address' : '2/1/4'}, function(json) {
+		$('#temp_kamer1').text(json.value);
+	});		
+	$.getJSON('./rest/knxservice/group', {'address' : '2/1/5'}, function(json) {
+		$('#temp_douche').text(json.value);
+	});	
+	$.getJSON('./rest/knxservice/group', {'address' : '2/1/6'}, function(json) {
+		$('#temp_kamer2').text(json.value);
+	});	
+	$.getJSON('./rest/knxservice/group', {'address' : '2/1/7'}, function(json) {
+		$('#temp_bureau_tom').text(json.value);
+	});	
+	$.getJSON('./rest/knxservice/group', {'address' : '2/6/1'}, function(json) {
+		$('#temp_buiten').text(json.value);
+	});	
+}
+
+$(document).ready(function(){
+	updateAll();
+	// update every 10 seconds?
+	setInterval(function(){ updateAll()}, 20 * 1000);
+});
+
+</script>
+
+
+Alarm <br />
+* Woning volledig: <span id="al_woning_voll"></span><br />
+* Woning gedeeltelijk: <span id="al_woning_ged"></span><br />
+* Tuinberging volledig: <span id="al_tuin_voll"></span><br />
+* Brand!: <span id="al_brand"></span><br />
+* Alarm!: <span id="al_woning_voll"></span><br />
+<br />
+Buiten:<br />
+* Temp: <span id="temp_buiten"></span><br />
+<br />
+Living <br />
+* Temp: <span id="temp_living"></span><br />
+<br />
+Bureau Marlies<br />
+* Temp: <span id="temp_bureau_marlies"></span><br />
+<br />
+Wasplaats<br />
+* Temp: <span id="temp_wasplaats"></span><br />
+<br />
+Entertainment kamer<br />
+* Temp: <span id="temp_entertain"></span><br />
+<br />
+Kamer 1<br />
+* Temp: <span id="temp_kamer1"></span><br />
+<br />
+Douche<br />
+* Temp: <span id="temp_douche"></span><br />
+<br />
+Kamer 2<br />
+* Temp: <span id="temp_kamer2"></span><br />
+<br />
+Bureau Tom<br />
+* Temp: <span id="temp_bureau_tom"></span><br />
+* Licht - vooraan: <span id="licht_bt_vooraan"></span><br />
+<br />
 
 </body>
 </html>

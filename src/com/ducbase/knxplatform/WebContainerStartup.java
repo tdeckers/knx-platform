@@ -1,14 +1,17 @@
 package com.ducbase.knxplatform;
 
-import java.io.File;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import com.ducbase.knxplatform.adapters.KNXAdapter;
 import tuwien.auto.calimero.log.LogManager;
 import tuwien.auto.calimero.log.LogService;
+
+import com.ducbase.knxplatform.adapters.KNXAdapter;
+import com.ducbase.knxplatform.connectors.GoogleDriveConnector;
 
 
 
@@ -24,6 +27,13 @@ public class WebContainerStartup implements ServletContextListener {
 		adapter.start();
 		event.getServletContext().setAttribute("adapter", adapter);
 		
+		logger.info("Connecting to Google Drive");
+		try {
+			GoogleDriveConnector conn = new GoogleDriveConnector();
+		} catch (GeneralSecurityException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	@Override

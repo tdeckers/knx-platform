@@ -27,6 +27,10 @@ public class KNXProcessListener implements ProcessListener {
 		String src = e.getSourceAddr().toString();
 		byte[] asdu = e.getASDU();
 		logger.fine(src + " -> " + dst + ": " + asdu.length);
+		// Alarm status
+		if (dst.startsWith("0/1/")) {
+			this.writePercentage(dst, asdu);
+		}
 		// Lights dimming value
 		if (dst.startsWith("1/3/")) {
 			this.writePercentage(dst, asdu);
