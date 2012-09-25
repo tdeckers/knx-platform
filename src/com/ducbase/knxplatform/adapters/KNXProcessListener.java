@@ -60,7 +60,7 @@ public class KNXProcessListener implements ProcessListener {
 			// TODO: not implemented
 		}
 		// Shutter position
-		if (dst.startsWith("3/2/")) {
+		if (dst.startsWith("3/3/")) {
 			this.writePercentage(dst, asdu);
 		}
 
