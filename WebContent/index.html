@@ -134,10 +134,22 @@ $(document).ready(function(){
 	updateAll();
 	// update every 10 seconds?
 	setInterval(function(){ updateAll()}, 20 * 1000);
+	
+	$("#poort").click(function() {
+		$.ajax({
+			type: "POST",
+			url: "./rest/knxservice/group",
+			data: "{'address': '4/0/0','value': true}",
+			contentType: "application/json",
+			processData: false
+		});
+		
+	});
 });
 
-</script>
 
+</script>
+<div style="float: right"><span id="poort">Poort</span></div>
 
 Alarm <br />
 * Woning volledig: <span id="al_woning_voll"></span><br />
@@ -160,18 +172,18 @@ Bureau Marlies<br />
 <br />
 Kamer 1<br />
 * Temp: <span id="temp_kamer1"></span> / <span id="settemp_kamer1"></span><br />
-* Rolluik: <span id="shutter_kamer1"></span><br /> (% gesloten)
+* Rolluik: <span id="shutter_kamer1"></span> (% gesloten)<br /> 
 <br />
 Kamer 2<br />
 * Temp: <span id="temp_kamer2"></span> / <span id="settemp_kamer2"></span><br />
-* Rolluik: <span id="shutter_kamer2"></span><br /> (% gesloten)
+* Rolluik: <span id="shutter_kamer2"></span> (% gesloten)<br /> 
 <br />
 Douche<br />
 * Temp: <span id="temp_douche"></span> / <span id="settemp_douche"></span><br />
 <br />
 Masterbedroom<br />
 * Temp: <span id="temp_masterbed"></span> / <span id="settemp_masterbed"></span><br />
-* Rolluik: <span id="shutter_mb"></span><br /> (% gesloten)
+* Rolluik: <span id="shutter_mb"></span> (% gesloten)<br /> 
 * Licht centraal: <span id="licht_mb_centraal"></span><br />
 * Licht gang: <span id="licht_mb_gang"></span><br />
 <br />

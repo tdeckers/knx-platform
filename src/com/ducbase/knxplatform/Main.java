@@ -36,14 +36,14 @@ public class Main {
 		return "Hi!"; 		
 	}
 	
-	@POST
-	@Consumes(MediaType.TEXT_PLAIN)
-	public void send(String value) {
-		logger.fine("Sending...");
-		KNXAdapter adapter = (KNXAdapter) context.getAttribute("adapter");
-		boolean boolValue = Boolean.parseBoolean(value);		
-		adapter.send(boolValue);
-	}
+//	@POST
+//	@Consumes(MediaType.TEXT_PLAIN)
+//	public void send(String value) {
+//		logger.fine("Sending...");
+//		KNXAdapter adapter = (KNXAdapter) context.getAttribute("adapter");
+//		boolean boolValue = Boolean.parseBoolean(value);		
+//		adapter.send(boolValue);
+//	}
 	
 
 	/**

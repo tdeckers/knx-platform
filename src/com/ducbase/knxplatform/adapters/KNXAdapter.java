@@ -164,7 +164,7 @@ public class KNXAdapter {
 					new InetSocketAddress(InetAddress.getByName("192.168.2.150"), KNXnetIPConnection.IP_PORT), 
 					false, 
 					new TPSettings(false));
-			ProcessCommunicator pc = new ProcessCommunicatorImpl(link);
+			pc = new ProcessCommunicatorImpl(link);
 			pc.addProcessListener(new KNXProcessListener(this));
 
 		} catch (KNXException | UnknownHostException e) {
@@ -210,13 +210,13 @@ public class KNXAdapter {
 		cache.put(typeElement);		
 	}
 	
-	public void send(boolean value) {
+	public void sendBoolean(String groupAddress, boolean value) {
 		if (! started) {
 			logger.warning("Can't send: KNX Adapter not started");
 			return;
 		}
 		try {
-			GroupAddress address = new GroupAddress("1/1/18");
+			GroupAddress address = new GroupAddress(groupAddress);
 			pc.write(address, value);
 		} catch (KNXLinkClosedException | KNXFormatException | KNXTimeoutException e) {
 			// TODO Auto-generated catch block

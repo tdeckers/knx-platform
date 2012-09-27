@@ -9,12 +9,16 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 /**
  * Access KNX data through a REST API
@@ -65,6 +69,21 @@ public class KNXService {
 		result.append(" ] }");
 		
 		return result.toString();
+	}
+	
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("group")
+	public void sendBoolean(JSONObject object) throws JSONException {
+		String groupAddress = object.getString("address");
+		boolean value = object.getBoolean("value");
+		
+		if (groupAddress == null || "".equals(groupAddress)) {
+			logger.warning("groupAddress can't be empty (" + groupAddress + "|" + value + ")");
+			return;
+		}
+		KNXAdapter adapter = (KNXAdapter) context.getAttribute("adapter");
+		adapter.sendBoolean(groupAddress, value);		
 	}
 	
 }
