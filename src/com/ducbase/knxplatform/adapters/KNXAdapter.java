@@ -222,8 +222,21 @@ public class KNXAdapter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
+	
+	public void sendIntUnscaled(String groupAddress, int value) {
+		if (! started) {
+			logger.warning("Can't send: KNX Adapter not started");
+			return;
+		}
+		try {
+			GroupAddress address = new GroupAddress(groupAddress);			
+			pc.write(address, value, ProcessCommunicator.UNSCALED);
+		} catch (KNXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}	
 	
 	/** 
 	 * TODO remove this method... temporary one.

@@ -74,16 +74,34 @@ public class KNXService {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("group")
-	public void sendBoolean(JSONObject object) throws JSONException {
+	public void send(JSONObject object) throws JSONException {
 		String groupAddress = object.getString("address");
-		boolean value = object.getBoolean("value");
-		
 		if (groupAddress == null || "".equals(groupAddress)) {
-			logger.warning("groupAddress can't be empty (" + groupAddress + "|" + value + ")");
+			logger.warning("groupAddress can't be empty (" + groupAddress + ")");
 			return;
 		}
 		KNXAdapter adapter = (KNXAdapter) context.getAttribute("adapter");
-		adapter.sendBoolean(groupAddress, value);		
+		
+		try {
+			boolean value = object.getBoolean("boolean");
+			logger.fine("About to send boolean (" + value + ")");
+			adapter.sendBoolean(groupAddress, value);
+			return;
+		} catch (JSONException e) {
+			// likely 'boolean' not found.
+		}
+		
+		try {
+			int value = object.getInt("int");
+			logger.fine("About to send int (" + value + ")");			
+			adapter.sendIntUnscaled(groupAddress, value);	
+			return;
+		} catch (JSONException e) {
+			// likely 'int' not found.
+		}
+		
+		// Should not get here
+		throw new RuntimeException("Nothing to send");
 	}
 	
 }
