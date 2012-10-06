@@ -90,34 +90,7 @@ public class KNXAdapter {
 	public KNXAdapter() {
 		
 		// TODO: centralize reading from config and configuring system... this to catch config issue in one place.
-		
-//		FileReader reader = null;
-//		try {
-//			// Create reader for config file
-//			reader = new FileReader("devices.json");
-//		} catch (FileNotFoundException e) {
-//
-//			e.printStackTrace();
-//		}
-//				
-//		// Using Google Gson for parsing.
-//		Gson json = new Gson();
-//		// Map JSON file to DevicesConfig object
-//		DevicesConfig config = json.fromJson(reader, DevicesConfig.class);
-//		logger.finest("Devices configured: " + config.devices.length);
-//
-//		for(DeviceConfig device: config.devices) {
-//			logger.finest("Configuring device: " + device.name);
-//			StringTokenizer t = new StringTokenizer(device.state);
-//			String adapter = t.nextToken();
-//			logger.finest("Adapter: " + adapter );
-//			String groupAddress = t.nextToken();
-//			logger.finest("Group address: " + groupAddress);
-//
-//			// Add group address to list to monitor.
-//			groupAddresses.add(groupAddress);
-//		}
-//		
+
 	}
 	
 	/**
@@ -171,19 +144,9 @@ public class KNXAdapter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-	
-		// start monitoring
-		//monitor = new KNXMonitor(this);
-		//monitor.start();
-		
-		
-		
-		// continuously update cache
-		
+
 		// set state
-		started = true;
-		
+		started = true;		
 	}
 	
 	public void stop() {
