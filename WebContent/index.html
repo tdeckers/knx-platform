@@ -127,8 +127,20 @@ function updateAll() {
 	$.getJSON('./rest/knxservice/group', {'address' : '2/6/1'}, function(json) {
 		$('#temp_buiten').text(json.value);
 	});	
+	
+	// Heating required?
+	$.getJSON('./rest/knxservice/group', {'address' : '2/0/4'}, function(json) {
+		if (json.value == 'on') {
+			$('#verwarming').css('background-color', 'red');
+		} else {
+			$('#verwarming').css('background-color', 'transparent');
+		}
 
+	});	
 }
+
+// temp variable.
+var heatingState = 1
 
 $(document).ready(function(){
 	updateAll();
@@ -154,18 +166,18 @@ $(document).ready(function(){
 			250); // end setInterval		
 	});
 	
+	// 0: Auto
 	// 1: Comfort
 	// 2: Stand-by
 	// 4: Frost Protection	
-	$("#verwarming").click(function() {
-		$.ajax({
-			type: "POST",
-			url: "./rest/knxservice/group",
-			data: "{'address': '2/4/7','int': '1'}",
-			contentType: "application/json",
-			processData: false
-		});
-		
+	$("#verwarming").click(function() {		
+			$.ajax({
+				type: "POST",
+				url: "./rest/knxservice/group",
+				data: "{'address': '2/4/0','int': '1'}",
+				contentType: "application/json",
+				processData: false
+			});	
 	});	
 });
 
@@ -175,7 +187,9 @@ $(document).ready(function(){
 	<span id="poort">Poort</span><br />
 	<br />
 	<br />
-	<span id="verwarming">Verwarming</span>
+	<span id="verwarming">Verwarming living</span><br />
+	<br />
+	
 </div>
 
 Alarm <br />
