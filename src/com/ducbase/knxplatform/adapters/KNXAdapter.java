@@ -197,6 +197,17 @@ public class KNXAdapter {
 			pc.write(address, value, ProcessCommunicator.UNSCALED);
 		} catch (KNXException e) {
 			// TODO Auto-generated catch block
+//			Oct 06, 2012 7:25:57 PM org.apache.catalina.realm.LockOutRealm authenticate
+//			WARNING: An attempt was made to authenticate the locked user "admin"
+//			tuwien.auto.calimero.link.KNXLinkClosedException: link closed
+//			        at tuwien.auto.calimero.link.KNXNetworkLinkIP.doSend(KNXNetworkLinkIP.java)
+//			        at tuwien.auto.calimero.link.KNXNetworkLinkIP.send(KNXNetworkLinkIP.java)
+//			        at tuwien.auto.calimero.link.KNXNetworkLinkIP.sendRequestWait(KNXNetworkLinkIP.java)
+//			        at tuwien.auto.calimero.process.ProcessCommunicatorImpl.write(ProcessCommunicatorImpl.java)
+//			        at tuwien.auto.calimero.process.ProcessCommunicatorImpl.write(ProcessCommunicatorImpl.java)
+//			        at com.ducbase.knxplatform.adapters.KNXAdapter.sendIntUnscaled(KNXAdapter.java:197)
+//			        at com.ducbase.knxplatform.adapters.KNXService.send(KNXService.java:97)			
+			
 			e.printStackTrace();
 		}
 	}	
