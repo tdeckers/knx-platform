@@ -36,7 +36,19 @@ public class GoogleUploadJob implements Job {
 		}
 		
 		HashMap<String, String> map = new HashMap<String, String>();
-		String[] addresses = {"2/6/1", "2/6/0", "2/1/0", "2/2/0", "2/1/9", "2/2/9", "2/0/4"};
+		String[] addresses = {"2/6/1", "2/6/0", // outside, floor (living)
+				"2/1/0", "2/2/0", "2/3/0", // living (actual, setpoint, variable)
+				"2/1/1", "2/2/1", "2/3/4", // bureau Marlies (actual, setpoint, variable)
+				"2/1/2", "2/2/1", "2/3/5", // wasplaats (actual, setpoint, variable)
+				"2/1/3", "2/2/3", "2/3/6", // entertainment (actual, setpoint, variable)
+				"2/1/4", "2/2/4", "2/3/7", // kamer 1 (actual, setpoint, variable)
+				"2/1/5", "2/2/5", "2/3/8", // douchekamer (actual, setpoint, variable)
+				"2/1/6", "2/2/6", "2/3/9", // kamer 2 (actual, setpoint, variable)
+				"2/1/7", "2/2/7", "2/3/10", // bureau Tom (actual, setpoint, variable)
+				"2/1/8", "2/2/8", "2/3/12", // masterbedroom (actual, setpoint, variable)
+				"2/1/9", "2/2/9", "2/3/13",  // badkamer (actual, setpoint, variable)
+				"2/0/4" // heating required?
+				};
 		for(String address: addresses) {
 			map.put("g" + address.replace('/', '-'), adapter.getValueForGroupAddress(address).replace('.', ','));
 		}
