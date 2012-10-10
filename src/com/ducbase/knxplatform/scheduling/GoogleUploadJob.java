@@ -39,7 +39,7 @@ public class GoogleUploadJob implements Job {
 		String[] addresses = {"2/6/1", "2/6/0", // outside, floor (living)
 				"2/1/0", "2/2/0", "2/3/0", // living (actual, setpoint, variable)
 				"2/1/1", "2/2/1", "2/3/4", // bureau Marlies (actual, setpoint, variable)
-				"2/1/2", "2/2/1", "2/3/5", // wasplaats (actual, setpoint, variable)
+				"2/1/2", "2/2/2", "2/3/5", // wasplaats (actual, setpoint, variable)
 				"2/1/3", "2/2/3", "2/3/6", // entertainment (actual, setpoint, variable)
 				"2/1/4", "2/2/4", "2/3/7", // kamer 1 (actual, setpoint, variable)
 				"2/1/5", "2/2/5", "2/3/8", // douchekamer (actual, setpoint, variable)
