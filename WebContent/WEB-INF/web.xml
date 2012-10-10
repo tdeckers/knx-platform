@@ -16,13 +16,34 @@
 		<servlet-name>Jersey REST Service</servlet-name>
 		<url-pattern>/rest/*</url-pattern>
 	</servlet-mapping>
+	
+	<context-param>
+         <param-name>quartz:config-file</param-name>
+         <param-value>com/ducbase/knxplatform/scheduling/quartz.properties</param-value>
+     </context-param>
+     <context-param>
+         <param-name>quartz:shutdown-on-unload</param-name>
+         <param-value>true</param-value>
+     </context-param>
+     <context-param>
+         <param-name>quartz:wait-on-shutdown</param-name>
+         <param-value>false</param-value>
+     </context-param>
+     <context-param>
+         <param-name>quartz:start-scheduler-on-load</param-name>
+         <param-value>true</param-value>
+     </context-param>
+	
 	<listener>
-		<listener-class>com.ducbase.knxplatform.WebContainerStartup</listener-class>
-	</listener>
+         <listener-class>org.quartz.ee.servlet.QuartzInitializerListener</listener-class>
+    </listener>     
 	<listener>
 		<listener-class>net.sf.ehcache.constructs.web.ShutdownListener</listener-class>
 	</listener>
-	
+	<listener>
+		<listener-class>com.ducbase.knxplatform.WebContainerStartup</listener-class>
+	</listener>
+		
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>secureapp</web-resource-name>

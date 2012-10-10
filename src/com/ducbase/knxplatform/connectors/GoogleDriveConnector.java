@@ -5,9 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -42,7 +45,12 @@ public class GoogleDriveConnector {
 	
 	private static Logger logger = Logger.getLogger(GoogleDriveConnector.class.getName());
 	
-	public GoogleDriveConnector() throws GeneralSecurityException, IOException, ServiceException { 
+	private static GoogleDriveConnector instance;
+	
+	private SpreadsheetService service = new SpreadsheetService("KNXPlatform");
+	URL listFeedUrl = null;
+	
+	private GoogleDriveConnector() throws GeneralSecurityException, IOException, ServiceException { 
 		// TODO: key file hardcoded, and place in d:\dev\eclipse37.  Should read from somewhere else.
 		GoogleCredential credential = new GoogleCredential.Builder()
 			.setTransport(new NetHttpTransport())
@@ -59,8 +67,6 @@ public class GoogleDriveConnector {
 //				.build();
 
 		
-		SpreadsheetService service = new SpreadsheetService("KNXPlatform");
-
 		service.setOAuth2Credentials(credential);
 
 		
@@ -102,20 +108,52 @@ public class GoogleDriveConnector {
 	    WorksheetEntry worksheet = worksheets.get(0);
 	    
 	 // Fetch the list feed of the worksheet.
-	    URL listFeedUrl = worksheet.getListFeedUrl();
-	    ListFeed listFeed = service.getFeed(listFeedUrl, ListFeed.class);
+	    listFeedUrl = worksheet.getListFeedUrl();
+//	    ListFeed listFeed = service.getFeed(listFeedUrl, ListFeed.class);
 	    
 	 // Create a local representation of the new row.
-	    ListEntry row = new ListEntry();
-	    row.getCustomElements().setValueLocal("firstname", "Joe");
-	    row.getCustomElements().setValueLocal("lastname", "Smith");
-	    row.getCustomElements().setValueLocal("age", new Date().toString());
-	    row.getCustomElements().setValueLocal("height", "176");
+//	    ListEntry row = new ListEntry();
+//	    row.getCustomElements().setValueLocal("firstname", "Joe");
+//	    row.getCustomElements().setValueLocal("lastname", "Smith");
+//	    row.getCustomElements().setValueLocal("age", new Date().toString());
+//	    row.getCustomElements().setValueLocal("height", "176");
 
 	    // Send the new row to the API for insertion.
-	    row = service.insert(listFeedUrl, row);
+//	    row = service.insert(listFeedUrl, row);
 			
 	}
 	
+	public static void initialize() throws GeneralSecurityException, IOException, ServiceException {
+		if (instance == null) {
+			synchronized(GoogleDriveConnector.class) {
+				if (instance == null) {
+					instance = new GoogleDriveConnector();
+				}
+			}
+		}
+	}
+	
+	public static GoogleDriveConnector getInstance() throws GeneralSecurityException, IOException, ServiceException {
+		initialize();
+		return instance;
+		
+	}	
 
+	public void upload(HashMap<String, String> values) throws IOException, ServiceException {
+		 // Create a local representation of the new row.
+	    ListEntry row = new ListEntry();
+	    Set<String> keys = values.keySet();
+	    
+	    for(String key: keys) {
+	    	logger.fine("KEY[" + key + "]:VALUE[" + values.get(key) + "]");
+	    	row.getCustomElements().setValueLocal(key, values.get(key));
+	    }
+	    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+	    row.getCustomElements().setValueLocal("date", formatter.format(new Date()));
+	    
+	    // Send the new row to the API for insertion.
+	    row = service.insert(listFeedUrl, row);
+		
+	}
+	
 }

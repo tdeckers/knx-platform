@@ -2,17 +2,33 @@ package com.ducbase.knxplatform;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
+import org.quartz.Job;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SchedulerFactory;
+import org.quartz.Trigger;
+import org.quartz.impl.StdSchedulerFactory;
 
 import tuwien.auto.calimero.log.LogManager;
 import tuwien.auto.calimero.log.LogService;
 
 import com.ducbase.knxplatform.adapters.KNXAdapter;
 import com.ducbase.knxplatform.connectors.GoogleDriveConnector;
+import com.ducbase.knxplatform.scheduling.GoogleUploadJob;
+import com.google.gdata.util.ServiceException;
 
+import static org.quartz.JobBuilder.*;
+import static org.quartz.TriggerBuilder.*;
+import static org.quartz.SimpleScheduleBuilder.*;
 
 
 public class WebContainerStartup implements ServletContextListener {
@@ -21,24 +37,53 @@ public class WebContainerStartup implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
-		logger.info("Context Initialized");
+		logger.info("Initializing context");
 		// TODO should probably set DeviceManager here instead.
 		KNXAdapter adapter = new KNXAdapter();
 		adapter.start();
 		event.getServletContext().setAttribute("adapter", adapter);
 		
 		logger.info("Connecting to Google Drive");
+		GoogleDriveConnector connector = null;
 		try {
-			GoogleDriveConnector conn = new GoogleDriveConnector();
-		} catch (GeneralSecurityException | IOException e) {
+			connector = GoogleDriveConnector.getInstance();
+		} catch (GeneralSecurityException | IOException | ServiceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		// Make sure we can use this KNX adapter and Connector in our Scheduler
+		try {
+			SchedulerFactory factory = (SchedulerFactory) event.getServletContext().getAttribute("org.quartz.impl.StdSchedulerFactory.KEY");
+			Scheduler scheduler = factory.getScheduler("GoogleScheduler");
+			scheduler.getContext().put("adapter", adapter);
+			scheduler.getContext().put("connector", connector);
+			JobDetail job = newJob(GoogleUploadJob.class)
+					.withIdentity("google_job", "group1")
+					.build();
+			 
+			Trigger trigger = newTrigger()
+					.withIdentity("google_trigger", "group1")
+					.startNow()
+					.withSchedule(simpleSchedule()
+							.withIntervalInSeconds(300)
+							.repeatForever())
+					.build();
+			
+			logger.info("Scheduling Google job. [Scheduler: " + scheduler.getSchedulerName() + "]");
+			scheduler.scheduleJob(job, trigger);				
+				
+		} catch (SchedulerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent event) {
-		logger.info("Context Destroyed");
+		logger.info("Destroying context");
+		logger.info("Stopping KNX adapter");
 		KNXAdapter adapter = (KNXAdapter) event.getServletContext().getAttribute("adapter");
 		adapter.stop();
 		
