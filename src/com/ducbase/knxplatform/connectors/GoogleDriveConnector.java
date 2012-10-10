@@ -3,6 +3,7 @@ package com.ducbase.knxplatform.connectors;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
@@ -48,42 +49,88 @@ public class GoogleDriveConnector {
 	private static GoogleDriveConnector instance;
 	
 	private SpreadsheetService service = new SpreadsheetService("KNXPlatform");
-	URL listFeedUrl = null;
 	
-	private GoogleDriveConnector() throws GeneralSecurityException, IOException, ServiceException { 
+	private GoogleDriveConnector() throws GeneralSecurityException, IOException, ServiceException {
+		File keyFile = new File("key.p12"); // typically this is at {user.dir}/<keyfilename>
+		logger.info("Looking for key at " + keyFile.getAbsolutePath());
+		
 		// TODO: key file hardcoded, and place in d:\dev\eclipse37.  Should read from somewhere else.
 		GoogleCredential credential = new GoogleCredential.Builder()
 			.setTransport(new NetHttpTransport())
 			.setJsonFactory(new JacksonFactory())
-//			.setServiceAccountId("tom@ducbase.com")
 			.setServiceAccountId("775318026373@developer.gserviceaccount.com")  // share doc with this user!
-//			.setServiceAccountScopes(DriveScopes.DRIVE)
 			.setServiceAccountScopes("https://spreadsheets.google.com/feeds/")
-			.setServiceAccountPrivateKeyFromP12File(new File("key.p12"))
+			.setServiceAccountPrivateKeyFromP12File(keyFile)
 			.build();
-		
-//		Drive drive = new Drive.Builder(new NetHttpTransport(), new JacksonFactory(), credential)
-//				.setApplicationName("KNXPlatform")
-//				.build();
-
-		
+				
 		service.setOAuth2Credentials(credential);
-
+	}
+	
+	public static void initialize() throws GeneralSecurityException, IOException, ServiceException {
+		if (instance == null) {
+			synchronized(GoogleDriveConnector.class) {
+				if (instance == null) {
+					instance = new GoogleDriveConnector();
+				}
+			}
+		}
+	}
+	
+	public static GoogleDriveConnector getInstance() throws GeneralSecurityException, IOException, ServiceException {
+		initialize();
+		return instance;
 		
+	}	
+
+	public void upload(HashMap<String, String> values) throws IOException, ServiceException {
+		// select spreadsheet and worksheet
+		URL listFeedUrl = selectSheet(service);
+		
+		 // Create a local representation of the new row.
+	    ListEntry row = new ListEntry();
+	    Set<String> keys = values.keySet();
+	    
+	    for(String key: keys) {
+	    	logger.fine("KEY[" + key + "]:VALUE[" + values.get(key) + "]");
+	    	row.getCustomElements().setValueLocal(key, values.get(key));
+	    }
+	    SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+	    row.getCustomElements().setValueLocal("date", formatter.format(new Date()));
+	    
+	    // Send the new row to the API for insertion.
+	    row = service.insert(listFeedUrl, row);
+		
+	}
+
+	private URL selectSheet(SpreadsheetService service) throws IOException, ServiceException {
 		// Define the URL to request.  This should never change.
-	    URL SPREADSHEET_FEED_URL = new URL(
-	        "https://spreadsheets.google.com/feeds/spreadsheets/private/full");
+	    URL SPREADSHEET_FEED_URL = null;
+		try {
+			SPREADSHEET_FEED_URL = new URL(
+			    "https://spreadsheets.google.com/feeds/spreadsheets/private/full");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			// This should not happen... hardcoded URL!
+		}
 		
 		// Make a request to the API and get all spreadsheets.
 	    SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL,
 	        SpreadsheetFeed.class);
 	    List<SpreadsheetEntry> spreadsheets = feed.getEntries();
 
-	    logger.info("Got " + spreadsheets.size() + " spreadsheet(s).");
+	    logger.fine("Got " + spreadsheets.size() + " spreadsheet(s).");
 	    
 	    if (spreadsheets.size() == 0) {
 	        // TODO: There were no spreadsheets, act accordingly.
 	    }
+	    
+	    // What sheet are we looking for?
+	    // We use the model: knx_<month><year>
+	    SimpleDateFormat formatter = new SimpleDateFormat("MMYYYY");
+	    String sheetName = "knx_" + formatter.format(new Date());
+	    
+	    logger.fine("Looking for spreadsheet [" + sheetName + "]");
 	    
 	    Iterator<SpreadsheetEntry> iterator = spreadsheets.iterator();
 	    SpreadsheetEntry spreadsheet = null;
@@ -108,52 +155,8 @@ public class GoogleDriveConnector {
 	    WorksheetEntry worksheet = worksheets.get(0);
 	    
 	 // Fetch the list feed of the worksheet.
-	    listFeedUrl = worksheet.getListFeedUrl();
-//	    ListFeed listFeed = service.getFeed(listFeedUrl, ListFeed.class);
-	    
-	 // Create a local representation of the new row.
-//	    ListEntry row = new ListEntry();
-//	    row.getCustomElements().setValueLocal("firstname", "Joe");
-//	    row.getCustomElements().setValueLocal("lastname", "Smith");
-//	    row.getCustomElements().setValueLocal("age", new Date().toString());
-//	    row.getCustomElements().setValueLocal("height", "176");
-
-	    // Send the new row to the API for insertion.
-//	    row = service.insert(listFeedUrl, row);
-			
-	}
-	
-	public static void initialize() throws GeneralSecurityException, IOException, ServiceException {
-		if (instance == null) {
-			synchronized(GoogleDriveConnector.class) {
-				if (instance == null) {
-					instance = new GoogleDriveConnector();
-				}
-			}
-		}
-	}
-	
-	public static GoogleDriveConnector getInstance() throws GeneralSecurityException, IOException, ServiceException {
-		initialize();
-		return instance;
-		
-	}	
-
-	public void upload(HashMap<String, String> values) throws IOException, ServiceException {
-		 // Create a local representation of the new row.
-	    ListEntry row = new ListEntry();
-	    Set<String> keys = values.keySet();
-	    
-	    for(String key: keys) {
-	    	logger.fine("KEY[" + key + "]:VALUE[" + values.get(key) + "]");
-	    	row.getCustomElements().setValueLocal(key, values.get(key));
-	    }
-	    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-	    row.getCustomElements().setValueLocal("date", formatter.format(new Date()));
-	    
-	    // Send the new row to the API for insertion.
-	    row = service.insert(listFeedUrl, row);
-		
+		URL listFeedUrl = worksheet.getListFeedUrl();		
+		return listFeedUrl;
 	}
 	
 }

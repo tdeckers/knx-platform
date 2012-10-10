@@ -38,7 +38,7 @@ public class GoogleUploadJob implements Job {
 		HashMap<String, String> map = new HashMap<String, String>();
 		String[] addresses = {"2/6/1", "2/6/0", "2/1/0", "2/2/0", "2/1/9", "2/2/9", "2/0/4"};
 		for(String address: addresses) {
-			map.put('h' + address.replace('/', 'w'), adapter.getValueForGroupAddress(address));
+			map.put("g" + address.replace('/', '-'), adapter.getValueForGroupAddress(address).replace('.', ','));
 		}
 		
 //		String outsideActualTemp = adapter.getValueForGroupAddress("2/6/1");

@@ -94,6 +94,7 @@ public class KNXProcessListener implements ProcessListener {
 			e1.printStackTrace();
 		}
 		xlate.setData(asdu);
+		xlate.setAppendUnit(false);
 		adapter.deviceUpdate(dst, xlate.getValue(), DPTXlator2ByteFloat.DPT_TEMPERATURE);
 		logger.fine("TEMP: " + xlate.getValueFloat() + " " + DPTXlator2ByteFloat.DPT_TEMPERATURE.getUnit());
 	}
@@ -107,6 +108,7 @@ public class KNXProcessListener implements ProcessListener {
 			e1.printStackTrace();
 		}
 		xlate.setData(asdu);
+		xlate.setAppendUnit(false);
 		adapter.deviceUpdate(dst, xlate.getValue(), DPTXlatorBoolean.DPT_SWITCH);
 		logger.fine("SWITCH: " + xlate.getValue() + " " + DPTXlatorBoolean.DPT_SWITCH.getUnit());		
 	}
