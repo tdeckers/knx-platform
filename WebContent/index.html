@@ -8,6 +8,9 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 <script type="text/javascript">
 function updateAll() {
+	// Show status indicator
+	$('#loader').show();
+	
 	// Alarm settings
 	$.getJSON('./rest/knxservice/group', {'address' : '0/1/0'}, function(json) {
 		$('#al_woning_voll').text(json.value);
@@ -137,6 +140,9 @@ function updateAll() {
 		}
 
 	});	
+	
+	// Hide status indicator
+	$('#loader').hide();	
 }
 
 // temp variable.
@@ -144,7 +150,7 @@ var heatingState = 1
 
 $(document).ready(function(){
 	updateAll();
-	// update every 10 seconds?
+	// update every 20 seconds?
 	setInterval(function(){ updateAll()}, 20 * 1000);
 	
 	$("#poort").click(function() {
@@ -191,6 +197,8 @@ $(document).ready(function(){
 	<br />
 	
 </div>
+
+<img id="loader" src="./img/ajax-loader.gif" style="position: fixed; top: 10px; left: 20px;">
 
 Alarm <br />
 * Woning volledig: <span id="al_woning_voll"></span><br />
