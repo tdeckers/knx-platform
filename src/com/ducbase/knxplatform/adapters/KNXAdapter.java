@@ -177,7 +177,7 @@ public class KNXAdapter {
 		if (this.lastConnected == null) {
 			return "";
 		}
-		SimpleDateFormat formatter = new SimpleDateFormat("ddMMYYYY HH:mm:ss");
+		SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss");
 		String retVal = formatter.format(this.lastConnected);
 		return retVal;
 	}
