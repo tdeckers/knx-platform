@@ -127,7 +127,7 @@ public class KNXAdapter {
 	 */
 	public boolean isOk() {
 		if (link == null) {
-			logger.fine("Link is null");
+			logger.warning("KNX Link is null");
 			if (pc != null) {
 				pc.detach();
 			}
@@ -135,7 +135,7 @@ public class KNXAdapter {
 			return false;
 		}
 		if (!link.isOpen()) {
-			logger.fine("Link not open");
+			logger.warning("KNX Link not open");
 			if (pc != null) {
 				pc.detach();
 			}
