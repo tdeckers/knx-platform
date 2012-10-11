@@ -5,7 +5,9 @@ import java.io.FileReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -73,9 +75,9 @@ public class KNXAdapter {
 	
 	//public boolean started = false;
 	public enum State { STARTED, STOPPED, SPUTTER }
-	public State state = State.STOPPED;
+	private State state = State.STOPPED;
 	
-	
+	private Date lastConnected;	
 	
 	/**
 	 * a KNXAdapter maintains a cache of group address states.  Mainly for those group addresses used for Device state's.
@@ -171,6 +173,15 @@ public class KNXAdapter {
 		return retVal;
 	}
 	
+	public String getLastConnect() {
+		if (this.lastConnected == null) {
+			return "";
+		}
+		SimpleDateFormat formatter = new SimpleDateFormat("ddMMYYYY HH:mm:ss");
+		String retVal = formatter.format(this.lastConnected);
+		return retVal;
+	}
+	
 	public void connect() {
 		// find own IP address
 		InetAddress localAddress = null;
@@ -206,7 +217,7 @@ public class KNXAdapter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		this.lastConnected = new Date();		
 	}
 	
 	public void stop() {
