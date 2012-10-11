@@ -2,6 +2,7 @@ package com.ducbase.knxplatform.adapters;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -12,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+
+import javax.management.MBeanServer;
 
 import tuwien.auto.calimero.CloseEvent;
 import tuwien.auto.calimero.DetachEvent;
@@ -40,6 +43,7 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.management.ManagementService;
 
 import com.ducbase.knxplatform.config.DeviceConfig;
 import com.ducbase.knxplatform.config.DevicesConfig;
@@ -70,11 +74,11 @@ public class KNXAdapter {
 	private KNXNetworkLink link;
 	private ProcessCommunicator pc;
 	
-	static final String CACHE_NAME = "knx-cache";
+	private static final String CACHE_NAME = "distributed-knx-cache";  // correspond with name in ehcache.xml.
 	List<String> groupAddresses = new ArrayList<String>();
 	
 	//public boolean started = false;
-	public enum State { STARTED, STOPPED, SPUTTER }
+	public enum State { STARTED, STOPPED, SPUTTER, MISCONFIG }
 	private State state = State.STOPPED;
 	
 	private Date lastConnected;	
@@ -106,19 +110,23 @@ public class KNXAdapter {
 		logger.fine("Creating cache");
 		CacheManager cacheMgr = CacheManager.create();
 		
-		cache = new Cache(
-				new CacheConfiguration(CACHE_NAME, 1000)
-					.overflowToDisk(false)
-					.diskPersistent(false));
+		// Register cache manager as mBean!
+		MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+		ManagementService.registerMBeans(cacheMgr, mBeanServer, false, false, false, true);
+
+		
+		cache = cacheMgr.getCache(CACHE_NAME);
+		
+//		cache = new Cache(
+//				new CacheConfiguration(CACHE_NAME, 1000)
+//					.overflowToDisk(false)
+//					.diskPersistent(false));
 		
 		
-		cacheMgr.addCache(cache);
+//		cacheMgr.addCache(cache);
 		
 		logger.fine("Connecting KNX");
 		this.connect();
-
-		// set state
-		state = State.STARTED;		
 	}
 	
 	/**
@@ -169,6 +177,9 @@ public class KNXAdapter {
 			case SPUTTER:
 				retVal = "SPUTTER";
 				break;
+			case MISCONFIG:
+				retVal = "MISCONFIG";
+				break;
 		}
 		return retVal;
 	}
@@ -199,6 +210,9 @@ public class KNXAdapter {
 		} catch (UnknownHostException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			
+			state = State.MISCONFIG;
+			return;
 		}
 		logger.info("Using ip address: " + localAddress.getHostAddress());
 			
@@ -216,8 +230,13 @@ public class KNXAdapter {
 		} catch (KNXException | UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			state = State.SPUTTER;
+			return;
 		}
-		this.lastConnected = new Date();		
+		
+		// set state
+		state = State.STARTED;			
+		this.lastConnected = new Date();
 	}
 	
 	public void stop() {
@@ -240,7 +259,9 @@ public class KNXAdapter {
 		Element valueElement = new Element(groupAddress, value);
 		cache.put(valueElement);		
 		//TODO: no need to save DPT... we'll use device definition for that.
-		Element typeElement = new Element(groupAddress + "_dpt", dpt);
+		// Use tuwien.auto.calimero.dptxlator.TranslatorTypes is needed
+		// btw: is dpt.getID() enough? Does it include the mainType of the DPT?
+		Element typeElement = new Element(groupAddress + "_dpt", dpt.getID());
 		cache.put(typeElement);		
 	}
 	

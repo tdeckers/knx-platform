@@ -2,29 +2,31 @@
 <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="ehcache.xsd" updateCheck="true"
 	monitoring="autodetect">
+	
 	<diskStore path="java.io.tmpdir" />
-    <defaultCache
-            maxElementsInMemory="10000"
-            eternal="false"
-            timeToIdleSeconds="120"
-            timeToLiveSeconds="120"
-            overflowToDisk="true"
-            maxElementsOnDisk="10000000"
-            diskPersistent="false"
-            diskExpiryThreadIntervalSeconds="120"
-            memoryStoreEvictionPolicy="LRU"
-            />
-            <!-- Terracotta requires JARs! -->
- <!--   <cache name="distributed-knx-cache"
-           maxEntriesLocalHeap="10000"
-           eternal="false"
-           timeToIdleSeconds="300"
-           timeToLiveSeconds="600"
-		   overflowToDisk="false"
-           transactionalMode="off">
-        <terracotta clustered="true" valueMode="serialization" consistency="eventual" storageStrategy="DCV2" >
-        	<terracottaConfig url="localhost:9510" rejoin="true" />   
-        </terracotta>        
-    </cache>	-->
+	
+	<cacheManagerPeerProviderFactory
+		class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
+		properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1,
+multicastGroupPort=4446, timeToLive=32" />
+
+	<cacheManagerPeerListenerFactory
+		class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
+		properties="hostName=localhost, port=40001,
+			socketTimeoutMillis=2000" />
+
+	<defaultCache maxElementsInMemory="10000" eternal="false"
+		timeToIdleSeconds="120" timeToLiveSeconds="120" overflowToDisk="true"
+		maxElementsOnDisk="10000000" diskPersistent="false"
+		diskExpiryThreadIntervalSeconds="120" memoryStoreEvictionPolicy="LRU" />
+
+	<cache name="distributed-knx-cache" maxEntriesLocalHeap="10000"
+		eternal="true" overflowToDisk="false" transactionalMode="off">
+		<cacheEventListenerFactory
+			class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+			properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true,
+			replicateUpdatesViaCopy=false, replicateRemovals=true " />
+		<bootstrapCacheLoaderFactory class="net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory"/>
+	</cache>
 </ehcache>
  
