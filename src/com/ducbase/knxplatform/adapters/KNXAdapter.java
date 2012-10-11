@@ -71,7 +71,9 @@ public class KNXAdapter {
 	static final String CACHE_NAME = "knx-cache";
 	List<String> groupAddresses = new ArrayList<String>();
 	
-	public boolean started = false;
+	//public boolean started = false;
+	public enum State { STARTED, STOPPED, SPUTTER }
+	public State state = State.STOPPED;
 	
 	
 	
@@ -94,7 +96,7 @@ public class KNXAdapter {
 	}
 	
 	/**
-	 * Start the adapter operation
+	 * Start the adapter operation.  This will connect the adapter to the KNX network.
 	 */
 	public void start() {
 		logger.info("Starting KNX Adapter");
@@ -110,6 +112,50 @@ public class KNXAdapter {
 		
 		cacheMgr.addCache(cache);
 		
+		logger.fine("Connecting KNX");
+		this.connect();
+
+		// set state
+		state = State.STARTED;		
+	}
+	
+	/**
+	 * check adapter connection to KNX.  More specifically, it checks the <code>KNXNetworkLinkIP</code> health.
+	 * If not connected, this method does some cleanup too.
+	 * 
+	 * @return a <code>boolean</code> to indicate adapter health.
+	 */
+	public boolean isOk() {
+		if (link == null) {
+			logger.fine("Link is null");
+			if (pc != null) {
+				pc.detach();
+			}
+			state = State.SPUTTER;
+			return false;
+		}
+		if (!link.isOpen()) {
+			logger.fine("Link not open");
+			if (pc != null) {
+				pc.detach();
+			}
+			link.close();
+			state = state.SPUTTER;
+			return false;
+		}
+
+// Let's first see whether we can catch these stalls by just checking the link.		
+//		try {
+//			pc.readBool(new GroupAddress("1/4/0"));
+//		} catch (KNXException e) {
+//			e.printStackTrace();
+//			return false;
+//		}
+		logger.fine("Link is OK!");
+		return true;		
+	}
+	
+	public void connect() {
 		// find own IP address
 		InetAddress localAddress = null;
 		try {
@@ -144,9 +190,7 @@ public class KNXAdapter {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		// set state
-		started = true;		
+		
 	}
 	
 	public void stop() {
@@ -154,7 +198,7 @@ public class KNXAdapter {
 		pc.detach();
 		link.close();
 		
-		started = false;
+		state = State.SPUTTER;
 	}
 
 	/**
@@ -174,7 +218,7 @@ public class KNXAdapter {
 	}
 	
 	public void sendBoolean(String groupAddress, boolean value) {
-		if (! started) {
+		if (state != State.STARTED) {
 			logger.warning("Can't send: KNX Adapter not started");
 			return;
 		}
@@ -188,7 +232,7 @@ public class KNXAdapter {
 	}
 	
 	public void sendIntUnscaled(String groupAddress, int value) {
-		if (! started) {
+		if (state != State.STARTED) {
 			logger.warning("Can't send: KNX Adapter not started");
 			return;
 		}

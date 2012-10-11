@@ -94,7 +94,7 @@ public class GoogleDriveConnector {
 	    	logger.fine("KEY[" + key + "]:VALUE[" + values.get(key) + "]");
 	    	row.getCustomElements().setValueLocal(key, values.get(key));
 	    }
-	    SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+	    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");  // need to make sure this matches with sheet locale.
 	    row.getCustomElements().setValueLocal("date", formatter.format(new Date()));
 	    
 	    // Send the new row to the API for insertion.

@@ -24,6 +24,7 @@ import tuwien.auto.calimero.log.LogService;
 import com.ducbase.knxplatform.adapters.KNXAdapter;
 import com.ducbase.knxplatform.connectors.GoogleDriveConnector;
 import com.ducbase.knxplatform.scheduling.GoogleUploadJob;
+import com.ducbase.knxplatform.scheduling.KNXAdapterCheckJob;
 import com.google.gdata.util.ServiceException;
 
 import static org.quartz.JobBuilder.*;
@@ -51,27 +52,46 @@ public class WebContainerStartup implements ServletContextListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		// Make sure we can use this KNX adapter and Connector in our Scheduler
+				
 		try {
 			SchedulerFactory factory = (SchedulerFactory) event.getServletContext().getAttribute("org.quartz.impl.StdSchedulerFactory.KEY");
 			Scheduler scheduler = factory.getScheduler("GoogleScheduler");
+			
+			// Make sure we can use this KNX adapter and Connector in our Jobs
 			scheduler.getContext().put("adapter", adapter);
 			scheduler.getContext().put("connector", connector);
-			JobDetail job = newJob(GoogleUploadJob.class)
+
+			// Job for sending data to Google Spreadsheet
+			JobDetail googleJob = newJob(GoogleUploadJob.class)
 					.withIdentity("google_job", "group1")
 					.build();
 			 
-			Trigger trigger = newTrigger()
+			Trigger googleTrigger = newTrigger()
 					.withIdentity("google_trigger", "group1")
 					.startNow()
 					.withSchedule(simpleSchedule()
-							.withIntervalInSeconds(300)
+							.withIntervalInSeconds(300) // every 5 minutes
 							.repeatForever())
 					.build();
 			
 			logger.info("Scheduling Google job. [Scheduler: " + scheduler.getSchedulerName() + "]");
-			scheduler.scheduleJob(job, trigger);				
+			scheduler.scheduleJob(googleJob, googleTrigger);	
+			
+			// Job for checking KNX adapter link
+			JobDetail knxJob = newJob(KNXAdapterCheckJob.class)
+					.withIdentity("knx_job", "group1")
+					.build();
+			
+			Trigger knxTrigger = newTrigger()
+					.withIdentity("knx_job", "group1")
+					.startNow()
+					.withSchedule(simpleSchedule()
+							.withIntervalInSeconds(60) // every minute
+							.repeatForever())
+					.build();
+			
+			logger.info("Scheduling KNX job. [Scheduler: " + scheduler.getSchedulerName() + "]");
+			scheduler.scheduleJob(knxJob, knxTrigger);				
 				
 		} catch (SchedulerException e) {
 			// TODO Auto-generated catch block

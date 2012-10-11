@@ -15,8 +15,6 @@ import com.google.gdata.util.ServiceException;
 
 public class GoogleUploadJob implements Job {
 	
-	GoogleDriveConnector connector;
-	
 	private static Logger logger = Logger.getLogger(GoogleUploadJob.class.getName());
 	
 	public GoogleUploadJob() {

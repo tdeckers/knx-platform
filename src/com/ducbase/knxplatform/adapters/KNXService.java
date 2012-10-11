@@ -45,6 +45,14 @@ public class KNXService {
 	}
 	
 	@GET
+	@Produces(MediaType.APPLICATION_JSON)	
+	@Path("state")
+	public String getState() {
+		KNXAdapter adapter = (KNXAdapter) context.getAttribute("adapter");
+		return "{ \"value\": \"" + adapter.isOk() +"\" }";
+	}
+	
+	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("groups")
 	public String getValueForGroupAddresses() {
@@ -103,5 +111,6 @@ public class KNXService {
 		// Should not get here
 		throw new RuntimeException("Nothing to send");
 	}
+		
 	
 }
