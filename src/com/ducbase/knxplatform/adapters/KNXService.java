@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContext;
@@ -49,7 +50,7 @@ public class KNXService {
 	@Path("state")
 	public String getState() {
 		KNXAdapter adapter = (KNXAdapter) context.getAttribute("adapter");
-		return "{ \"value\": \"" + adapter.isOk() +"\" }";
+		return "{ \"value\": \"" + adapter.getState() +"\" }";
 	}
 	
 	@GET
@@ -111,6 +112,10 @@ public class KNXService {
 		// Should not get here
 		throw new RuntimeException("Nothing to send");
 	}
+	
+	public void setLog() {
+		LogManager mgr = LogManager.getLogManager();
 		
+	}
 	
 }

@@ -7,6 +7,22 @@
 <body style="font-family: Verdana; font-size: 9pt;">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 <script type="text/javascript">
+
+var count = 20;
+function progress() {
+	var progressString = '';
+	for (i = 1; i < count; i++) {
+		progressString += '.';
+	}
+	$('#progress').text(progressString);
+	count --;	
+	if (count == 0) {
+		updateAll();
+		count = 20;		
+	}
+}
+
+
 function updateAll() {
 	// Show status indicator
 	$('#loader').show();
@@ -141,6 +157,10 @@ function updateAll() {
 
 	});	
 	
+	$.getJSON('./rest/knxservice/state', function(json) {
+		$('#state').text(json.value);
+	});		
+	
 	// Hide status indicator
 	$('#loader').hide();	
 }
@@ -151,7 +171,9 @@ var heatingState = 1
 $(document).ready(function(){
 	updateAll();
 	// update every 20 seconds?
-	setInterval(function(){ updateAll()}, 20 * 1000);
+	setInterval(function(){ progress()}, 1 * 1000);
+	
+	//setInterval(function(){ updateAll()}, 20 * 1000);
 	
 	$("#poort").click(function() {
 		$.ajax({
@@ -195,6 +217,8 @@ $(document).ready(function(){
 	<br />
 	<span id="verwarming">Verwarming living</span><br />
 	<br />
+	<br />
+	<span id="state"></span><br />
 	
 </div>
 
@@ -247,6 +271,7 @@ Bureau Tom<br />
 <br />
 Buiten:<br />
 * Temp: <span id="temp_buiten"></span><br />
-
+<br />
+<div id="progress"></div>
 </body>
 </html>

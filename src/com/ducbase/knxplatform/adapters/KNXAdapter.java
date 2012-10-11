@@ -155,6 +155,22 @@ public class KNXAdapter {
 		return true;		
 	}
 	
+	public String getState() {
+		String retVal = "UNDEFINED";
+		switch (state) {
+			case STARTED:
+				retVal =  "STARTED";
+				break;
+			case STOPPED:
+				retVal = "STOPPED";
+				break;
+			case SPUTTER:
+				retVal = "SPUTTER";
+				break;
+		}
+		return retVal;
+	}
+	
 	public void connect() {
 		// find own IP address
 		InetAddress localAddress = null;
