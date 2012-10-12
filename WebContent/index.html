@@ -213,6 +213,27 @@ $(document).ready(function(){
 				processData: false
 			});	
 	});	
+	
+	$("#logon").click(function() {		
+		$.ajax({
+			type: "POST",
+			url: "./rest/knxservice/log",
+			data: "{'level': 'finer'}",
+			contentType: "application/json",
+			processData: false
+		});	
+	});
+	
+	$("#logoff").click(function() {		
+		$.ajax({
+			type: "POST",
+			url: "./rest/knxservice/log",
+			data: "{'level': 'info'}",
+			contentType: "application/json",
+			processData: false
+		});	
+	});		
+	
 });
 
 
@@ -227,6 +248,8 @@ $(document).ready(function(){
 	<br />
 	<span id="state"></span><br />
 	KNX last connect: <span id="lastconnect">---</span><br />
+	<br />
+	Log: <span id="logon">on</span> / <span id="logoff">off</span><br />
 	
 </div>
 

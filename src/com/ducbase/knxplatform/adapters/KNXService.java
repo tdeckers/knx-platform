@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -122,9 +123,22 @@ public class KNXService {
 		throw new RuntimeException("Nothing to send");
 	}
 	
-	public void setLog() {
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("log")	
+	public void setLog(JSONObject object) throws JSONException {
+		String level = object.getString("level");
+				
 		LogManager mgr = LogManager.getLogManager();
+		Logger confLog = mgr.getLogger("com.ducbase.knxplatform");
 		
+		if ("finer".equals(level)) {
+			logger.info("Setting log to FINER");
+			confLog.setLevel(Level.FINER);			
+		} else {
+			logger.info("Setting log to INFO");			
+			confLog.setLevel(Level.INFO);
+		}
 	}
 	
 }
