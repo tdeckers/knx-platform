@@ -263,6 +263,7 @@ public class KNXAdapter {
 		// btw: is dpt.getID() enough? Does it include the mainType of the DPT?
 		Element typeElement = new Element(groupAddress + "_dpt", dpt.getID());
 		cache.put(typeElement);		
+
 	}
 	
 	public void sendBoolean(String groupAddress, boolean value) {

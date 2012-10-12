@@ -4,7 +4,7 @@
 	monitoring="autodetect">
 	
 	<diskStore path="java.io.tmpdir" />
-	
+<!-- 	
 	<cacheManagerPeerProviderFactory
 		class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
 		properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1,
@@ -14,7 +14,7 @@ multicastGroupPort=4446, timeToLive=32" />
 		class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
 		properties="hostName=localhost, port=40001,
 			socketTimeoutMillis=2000" />
-
+ -->
 	<defaultCache maxElementsInMemory="10000" eternal="false"
 		timeToIdleSeconds="120" timeToLiveSeconds="120" overflowToDisk="true"
 		maxElementsOnDisk="10000000" diskPersistent="false"
@@ -22,11 +22,11 @@ multicastGroupPort=4446, timeToLive=32" />
 
 	<cache name="distributed-knx-cache" maxEntriesLocalHeap="10000"
 		eternal="true" overflowToDisk="false" transactionalMode="off">
-		<cacheEventListenerFactory
+<!-- 		<cacheEventListenerFactory
 			class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
 			properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true,
 			replicateUpdatesViaCopy=false, replicateRemovals=true " />
-		<bootstrapCacheLoaderFactory class="net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory"/>
+		<bootstrapCacheLoaderFactory class="net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory"/>   -->
 	</cache>
 </ehcache>
  
