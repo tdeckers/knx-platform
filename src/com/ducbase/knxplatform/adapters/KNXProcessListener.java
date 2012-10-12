@@ -68,7 +68,8 @@ public class KNXProcessListener implements ProcessListener {
 
 	@Override
 	public void detached(DetachEvent e) {
-		
+		logger.warning("KNXProcessListener detached from link");
+		adapter.setDetached();
 	}
 	
 	private void writePercentage(String dst, byte[] asdu) {

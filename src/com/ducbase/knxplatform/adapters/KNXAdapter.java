@@ -78,7 +78,7 @@ public class KNXAdapter {
 	List<String> groupAddresses = new ArrayList<String>();
 	
 	//public boolean started = false;
-	public enum State { STARTED, STOPPED, SPUTTER, MISCONFIG }
+	public enum State { STARTED, STOPPED, SPUTTER, MISCONFIG, DETACHED }
 	private State state = State.STOPPED;
 	
 	private Date lastConnected;	
@@ -153,6 +153,10 @@ public class KNXAdapter {
 			state = state.SPUTTER;
 			return false;
 		}
+		if (state == State.DETACHED) {
+			logger.warning("KNXProcessListener detached!");
+			return false;
+		}
 
 // Let's first see whether we can catch these stalls by just checking the link.		
 //		try {
@@ -180,6 +184,9 @@ public class KNXAdapter {
 			case MISCONFIG:
 				retVal = "MISCONFIG";
 				break;
+			case DETACHED:
+				retVal = "DETACHED";
+				break;
 		}
 		return retVal;
 	}
@@ -194,6 +201,9 @@ public class KNXAdapter {
 	}
 	
 	public void connect() {
+		// Cleanup
+		this.stop();		
+		
 		// find own IP address
 		InetAddress localAddress = null;
 		try {
@@ -241,10 +251,16 @@ public class KNXAdapter {
 	
 	public void stop() {
 		logger.info("Stopping KNX Adapter");
-		pc.detach();
-		link.close();
+		if (pc != null) {
+			pc.detach();
+			pc = null;
+		}
+		if (link != null) {
+			link.close();
+			link = null;
+		}
 		
-		state = State.SPUTTER;
+		state = State.STOPPED;
 	}
 
 	/**
@@ -314,6 +330,11 @@ public class KNXAdapter {
 		Element valueEl = cache.get(groupAddress);
 		if (valueEl == null) return "";
 		return (String) valueEl.getValue();		
+	}
+
+	public void setDetached() {
+		logger.info("Flagging KNXProcessListener and Link to be detached");
+		state = State.DETACHED;		
 	}
 	
 }
