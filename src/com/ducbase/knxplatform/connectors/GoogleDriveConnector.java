@@ -36,6 +36,7 @@ import com.google.gdata.util.ServiceException;
 /**
  * Connects to GoogleDrive for data exchange
  * 
+ * @see https://developers.google.com/google-apps/spreadsheets
  * @see https://code.google.com/apis/console/#project:775318026373
  * @see https://code.google.com/p/google-api-java-client/wiki/OAuth2#Service_Accounts
  * 
