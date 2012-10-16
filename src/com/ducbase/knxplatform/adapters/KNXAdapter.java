@@ -158,13 +158,12 @@ public class KNXAdapter {
 			return false;
 		}
 
-// Let's first see whether we can catch these stalls by just checking the link.		
-//		try {
-//			pc.readBool(new GroupAddress("1/4/0"));
-//		} catch (KNXException e) {
-//			e.printStackTrace();
-//			return false;
-//		}
+		try {
+			pc.readBool(new GroupAddress("1/4/0"));
+		} catch (KNXException e) {
+			e.printStackTrace();
+			return false;
+		}
 		logger.fine("Link is OK!");
 		return true;		
 	}
