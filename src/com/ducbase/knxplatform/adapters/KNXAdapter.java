@@ -125,10 +125,57 @@ public class KNXAdapter {
 		
 //		cacheMgr.addCache(cache);
 		
-		logger.fine("Connecting KNX");
 		this.connect();
+		this.prefetch();
 	}
 	
+	/**
+	 * prefetch state from KNX.  This method will send out read requests for all known devices.  
+	 * The responses will preload the cache.
+	 * 
+	 * TODO This is a hacked up version.  This should load from a list of configured devices.
+	 * 
+	 */
+	private void prefetch() {
+		logger.info("Prefetching states from KNX");
+		String[] boolGroups = {"0/1/0", "0/1/1", "0/1/3", "0/1/4", // Alarm status.
+				"2/0/4"};	// heating on/off
+						
+		for(String address: boolGroups) {
+			try {
+				pc.readBool(new GroupAddress(address));
+			} catch (KNXException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		String scalingGroupsPrefix = "2/3/";  // just heating variables for now.
+		for(int i = 4; i <= 13; i++) {
+			if (i == 11) continue; // nothing at 2/3/11			
+			try {
+				pc.readUnsigned(new GroupAddress(scalingGroupsPrefix + i), ProcessCommunicator.SCALING);
+			} catch (KNXException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		String[] floatGroupPrefixes = {"2/1/", //actual temp 
+								"2/2/"}; // setpoint temp
+		for(String prefix: floatGroupPrefixes) {
+			for(int i = 0; i <= 9; i++) { // for both prefixes, get all groups
+				try {
+					pc.readFloat(new GroupAddress(prefix + i));
+				} catch (KNXException e) {
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
+		logger.info("Done prefetching states from KNX");		
+		
+	}
+
 	/**
 	 * check adapter connection to KNX.  More specifically, it checks the <code>KNXNetworkLinkIP</code> health.
 	 * If not connected, this method does some cleanup too.
@@ -162,6 +209,7 @@ public class KNXAdapter {
 			pc.readBool(new GroupAddress("1/4/0"));
 		} catch (KNXException e) {
 			e.printStackTrace();
+			state = state.SPUTTER;
 			return false;
 		}
 		logger.fine("Link is OK!");
@@ -200,6 +248,7 @@ public class KNXAdapter {
 	}
 	
 	public void connect() {
+		logger.fine("Connecting KNX");
 		// Cleanup
 		this.stop();		
 		
