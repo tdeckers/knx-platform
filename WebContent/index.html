@@ -234,6 +234,46 @@ $(document).ready(function(){
 		});	
 	});		
 	
+	var Chat = {};
+	Chat.socket = null;
+	
+	Chat.connect = (function(host) {
+		Chat.socket = new WebSocket(host);
+
+		Chat.socket.onopen = function () {
+			$('#ws').text("CONNECTED");
+		}
+	
+		Chat.socket.onclose = function () {
+			$('#ws').text("CLOSED");
+		}
+		
+		Chat.socket.onerror = function (event) {			
+			$('#ws').text("ERROR");
+		}
+	
+		Chat.socket.onmessage = function (message) {
+			$('#ws').text(message.data);
+		}
+	
+	});		
+		
+	Chat.initialize = function() {
+		var url = 'wss://' + window.location.host + '/WebContent/ws';
+		Chat.connect(url);
+	};
+	
+	Chat.sendMessage = (function(msg) {
+		Chat.socket.send(msg);
+	});
+			
+	Chat.initialize();
+	
+	$("#ws").click(function() {
+		var date = new Date();
+		Chat.sendMessage('' + date);
+	});			
+	
 });
 
 
@@ -250,6 +290,8 @@ $(document).ready(function(){
 	KNX last connect: <span id="lastconnect">---</span><br />
 	<br />
 	Log: <span id="logon">on</span> / <span id="logoff">off</span><br />
+	<br />
+	WS: <span id="ws">...</span><br />
 	
 </div>
 

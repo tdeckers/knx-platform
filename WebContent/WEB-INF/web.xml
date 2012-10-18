@@ -11,11 +11,20 @@
 			<param-value>com.ducbase.knxplatform</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
-	</servlet>
+	</servlet>	
+	<servlet>
+		<servlet-name>WebSocket Servlet</servlet-name>
+		<servlet-class>com.ducbase.knxplatform.KNXWebSocketServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>	
 	<servlet-mapping>
 		<servlet-name>Jersey REST Service</servlet-name>
 		<url-pattern>/rest/*</url-pattern>
 	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>WebSocket Servlet</servlet-name>
+		<url-pattern>/ws</url-pattern>
+	</servlet-mapping>	
 	
 	<context-param>
          <param-name>quartz:config-file</param-name>
@@ -47,7 +56,9 @@
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>secureapp</web-resource-name>
-			<url-pattern>/*</url-pattern>
+			<url-pattern>/rest/*</url-pattern>
+			<url-pattern>/index.html</url-pattern>
+			<url-pattern>/knx.html</url-pattern>
 		</web-resource-collection>
 		      <auth-constraint>
          
@@ -58,14 +69,10 @@
 		</user-data-constraint>
 	</security-constraint>
 
-	    <login-config>
-      <auth-method>FORM</auth-method>
-      <realm-name>Example Form-Based Authentication Area</realm-name>
-      <form-login-config>
-        <form-login-page>/login/login.jsp</form-login-page>
-        <form-error-page>/login/error.jsp</form-error-page>
-      </form-login-config>
-    </login-config>	
+	<login-config>
+      <auth-method>BASIC</auth-method>
+      <realm-name>Basic Authentication Area</realm-name>
+    </login-config>
     
         <security-role>
       <role-name>knx</role-name>
