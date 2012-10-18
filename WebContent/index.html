@@ -266,7 +266,7 @@ $(document).ready(function(){
 		  newPathname += pathArray[i];
 		  newPathname += "/";		  
 		}
-		alert(window.location.pathname + '\n' + newPathname);		
+	
 		var url = 'wss://' + window.location.host + newPathname + 'ws';
 		Chat.connect(url);
 	};
