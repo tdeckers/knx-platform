@@ -150,8 +150,8 @@ public class KNXAdapter {
 		}
 		
 		String scalingGroupsPrefix = "2/3/";  // just heating variables for now.
-		for(int i = 4; i <= 13; i++) {
-			if (i == 11) continue; // nothing at 2/3/11			
+		for(int i = 0; i <= 13; i++) {
+			if (i == 1 || i == 2 || i == 3 || i == 11) continue; // nothing at 2/3/x 			
 			try {
 				pc.readUnsigned(new GroupAddress(scalingGroupsPrefix + i), ProcessCommunicator.SCALING);
 			} catch (KNXException e) {
