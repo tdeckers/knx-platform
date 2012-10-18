@@ -259,7 +259,15 @@ $(document).ready(function(){
 	});		
 		
 	Chat.initialize = function() {
-		var url = 'wss://' + window.location.host + '/WebContent/ws';
+		// Some magic to find the right path name
+		var pathArray = window.location.pathname.split('/');
+		var newPathname = "";
+		for ( i = 0; i < pathArray.length -1 ; i++ ) { // don't include the last part (which is index.html)
+		  newPathname += pathArray[i];
+		  newPathname += "/";		  
+		}
+		alert(window.location.pathname + '\n' + newPathname);		
+		var url = 'wss://' + window.location.host + newPathname + 'ws';
 		Chat.connect(url);
 	};
 	
