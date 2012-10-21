@@ -26,6 +26,15 @@ public class KNXProcessListener implements ProcessListener {
 		String dst = e.getDestination().toString();
 		String src = e.getSourceAddr().toString();
 		byte[] asdu = e.getASDU();
+		
+		// New processing logic!!
+		// If found in boolean addresses, store in cache.
+		if (adapter.booleanGroupAddresses.contains(dst)) {
+			this.writeBoolean(dst, asdu);
+		}
+		// End new processing logic !!
+		
+
 		logger.fine(src + " -> " + dst + ": " + asdu.length);
 		// Alarm status
 		if (dst.startsWith("0/1/")) {

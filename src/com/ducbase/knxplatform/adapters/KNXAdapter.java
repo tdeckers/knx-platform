@@ -9,8 +9,10 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -75,10 +77,10 @@ public class KNXAdapter {
 	private ProcessCommunicator pc;
 	
 	private static final String CACHE_NAME = "distributed-knx-cache";  // correspond with name in ehcache.xml.
-	List<String> groupAddresses = new ArrayList<String>();
+	List<String> booleanGroupAddresses = new ArrayList<String>();
 	
 	//public boolean started = false;
-	public enum State { STARTED, STOPPED, SPUTTER, MISCONFIG, DETACHED }
+	public enum State { STARTED, STOPPED, SPUTTER, MISCONFIG, DETACHED, LINK_CLOSED }
 	private State state = State.STOPPED;
 	
 	private Date lastConnected;	
@@ -205,13 +207,6 @@ public class KNXAdapter {
 			return false;
 		}
 
-		try {
-			pc.readBool(new GroupAddress("1/4/0"));
-		} catch (KNXException e) {
-			e.printStackTrace();
-			state = state.SPUTTER;
-			return false;
-		}
 		logger.fine("Link is OK!");
 		return true;		
 	}
@@ -233,6 +228,9 @@ public class KNXAdapter {
 				break;
 			case DETACHED:
 				retVal = "DETACHED";
+				break;
+			case LINK_CLOSED: 
+				retVal = "LINK_CLOSED";
 				break;
 		}
 		return retVal;
@@ -282,6 +280,25 @@ public class KNXAdapter {
 					new InetSocketAddress(InetAddress.getByName("192.168.2.150"), KNXnetIPConnection.IP_PORT), 
 					false, 
 					new TPSettings(false));
+			link.addLinkListener(new NetworkLinkListener() {
+				
+				@Override
+				public void linkClosed(CloseEvent e) {
+					if (!e.isUserRequest()) {
+						logger.warning("Link closed! Let's reconnect. (" + e.getReason() + " | " + e.getSource().toString() + ")");
+						connect();
+					}
+					if (!link.isOpen()) {
+						logger.severe("KNX Link lost!");
+					}
+				}
+				
+				@Override
+				public void indication(FrameEvent e) {}
+				
+				@Override
+				public void confirmation(FrameEvent e) {}
+			});
 			pc = new ProcessCommunicatorImpl(link);
 			pc.addProcessListener(new KNXProcessListener(this));
 
@@ -303,7 +320,7 @@ public class KNXAdapter {
 			pc.detach();
 			pc = null;
 		}
-		if (link != null) {
+		if (link != null) {			
 			link.close();
 			link = null;
 		}
@@ -383,6 +400,10 @@ public class KNXAdapter {
 	public void setDetached() {
 		logger.info("Flagging KNXProcessListener and Link to be detached");
 		state = State.DETACHED;		
+	}
+
+	public void registerBooleanGroup(String groupAddress) {
+		this.booleanGroupAddresses.add(groupAddress);
 	}
 	
 }
