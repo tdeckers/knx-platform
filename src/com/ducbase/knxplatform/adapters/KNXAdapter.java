@@ -278,8 +278,8 @@ public class KNXAdapter {
 					KNXNetworkLinkIP.TUNNEL, 					
 					new InetSocketAddress(localAddress, 0), 
 					new InetSocketAddress(InetAddress.getByName("192.168.2.150"), KNXnetIPConnection.IP_PORT), 
-					false, 
-					new TPSettings(false));
+					false, // don't use NAT
+					TPSettings.TP1);  // select TP1
 			link.addLinkListener(new NetworkLinkListener() {
 				
 				@Override
