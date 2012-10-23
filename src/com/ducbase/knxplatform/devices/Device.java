@@ -1,15 +1,28 @@
 package com.ducbase.knxplatform.devices;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+
+
 /**
  * 
  * @author tom@ducbase.com
  *
  */
+@XmlRootElement
 public abstract class Device {
 	
+	private int id;
 	private String name;
-	private String description;
-	private State state;
+	private String description;	
+	private String type;
+
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
 	
 	public String getName() {
 		return name;
@@ -23,11 +36,17 @@ public abstract class Device {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	abstract public State getState();
-	abstract public void setState(State state);
+	
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+	
 
 	public String toString() {
 		return "Device: " + name;
-	}
+	}	
 	
 }

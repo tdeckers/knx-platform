@@ -89,25 +89,17 @@ public class KNXAdapter {
 	 * a KNXAdapter maintains a cache of group address states.  Mainly for those group addresses used for Device state's.
 	 */
 	private Cache cache;
-
-	private KNXMonitor monitor;
+	
+	private static KNXAdapter instance;
 	
 	/**
 	 * Create a KNXAdapter
 	 * 
 	 * TODO: make singleton
 	 */
-	public KNXAdapter() {
+	private KNXAdapter() {
+		logger.info("Creating KNX Adapter");
 		
-		// TODO: centralize reading from config and configuring system... this to catch config issue in one place.
-
-	}
-	
-	/**
-	 * Start the adapter operation.  This will connect the adapter to the KNX network.
-	 */
-	public void start() {
-		logger.info("Starting KNX Adapter");
 		// start cache
 		logger.fine("Creating cache");
 		CacheManager cacheMgr = CacheManager.create();
@@ -115,18 +107,26 @@ public class KNXAdapter {
 		// Register cache manager as mBean!
 		MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
 		ManagementService.registerMBeans(cacheMgr, mBeanServer, false, false, false, true);
-
 		
 		cache = cacheMgr.getCache(CACHE_NAME);
 		
-//		cache = new Cache(
-//				new CacheConfiguration(CACHE_NAME, 1000)
-//					.overflowToDisk(false)
-//					.diskPersistent(false));
-		
-		
-//		cacheMgr.addCache(cache);
-		
+	}
+	
+	public static KNXAdapter getInstance() {
+		if (instance == null) {
+			synchronized(KNXAdapter.class) {
+				if (instance == null) {
+					instance = new KNXAdapter();
+				}
+			}
+		}
+		return instance;
+	}
+	
+	/**
+	 * Start the adapter operation.  This will connect the adapter to the KNX network.
+	 */
+	public void start() {
 		this.connect();
 		this.prefetch();
 	}

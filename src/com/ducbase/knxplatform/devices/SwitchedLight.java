@@ -6,17 +6,15 @@ package com.ducbase.knxplatform.devices;
  * @author tom@ducbase.com
  *
  */
-public class SwitchedLight extends Device {
+public abstract class SwitchedLight extends Device {
 
-	@Override
-	public State getState() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setState(State state) {
-		// TODO Auto-generated method stub		
+	abstract public Boolean isOn();
+	abstract public void turnOn();
+	abstract public void turnOff();
+	abstract public void toggle();
+	
+	public String getType() {
+		return SwitchedLight.class.getSimpleName();
 	}
 
 }

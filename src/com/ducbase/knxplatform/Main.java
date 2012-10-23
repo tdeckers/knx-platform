@@ -21,30 +21,9 @@ import com.ducbase.knxplatform.adapters.KNXAdapter;
  * @author tom@ducbase.com
  *
  */
-@Path("/hello")
 public class Main {
 	
 	private static Logger logger = Logger.getLogger(Main.class.getName());
-	
-	@Context
-	ServletContext context;
-	
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	public String sayHi() {
-		logger.fine(" === Hi! === ");
-		return "Hi!"; 		
-	}
-	
-//	@POST
-//	@Consumes(MediaType.TEXT_PLAIN)
-//	public void send(String value) {
-//		logger.fine("Sending...");
-//		KNXAdapter adapter = (KNXAdapter) context.getAttribute("adapter");
-//		boolean boolValue = Boolean.parseBoolean(value);		
-//		adapter.send(boolValue);
-//	}
-	
 
 	/**
 	 * @param args
@@ -52,19 +31,6 @@ public class Main {
 	public static void main(String[] args) {
 		logger.info("Starting");
 		
-		// load workflows
-		// load connectors
-		//   load Google docs connector
-		// start adapters
-		KNXAdapter knx = new KNXAdapter();
-		knx.start();
-		
-		//	 KNX adapter starts cache		
-		// load scheduling
-		
 	}
-	
-	
-	
 
 }
