@@ -162,9 +162,6 @@ function updateAll() {
 
 	});	
 	
-	$.getJSON('./rest/knxservice/state', function(json) {
-		$('#state').text(json.value);
-	});		
 	$.getJSON('./rest/knxservice/lastconnect', function(json) {
 		$('#lastconnect').text(json.value);
 	});			
@@ -296,7 +293,6 @@ $(document).ready(function(){
 	<span id="verwarming">Verwarming living</span><br />
 	<br />
 	<br />
-	<span id="state"></span><br />
 	KNX last connect: <span id="lastconnect">---</span><br />
 	<br />
 	Log: <span id="logon">on</span> / <span id="logoff">off</span><br />

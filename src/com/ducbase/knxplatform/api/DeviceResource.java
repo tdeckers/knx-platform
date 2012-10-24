@@ -1,5 +1,7 @@
 package com.ducbase.knxplatform.api;
 
+import java.util.logging.Logger;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
@@ -9,11 +11,10 @@ import javax.ws.rs.core.UriInfo;
 
 import com.ducbase.knxplatform.devices.Device;
 import com.ducbase.knxplatform.devices.DeviceManager;
-import com.sun.istack.internal.logging.Logger;
 
 public class DeviceResource {
 	
-	Logger logger = Logger.getLogger(DeviceResource.class);
+	Logger logger = Logger.getLogger(DeviceResource.class.getName());
 	
 	  @Context UriInfo uriInfo;
 	  @Context Request request;
