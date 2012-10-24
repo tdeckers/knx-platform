@@ -48,14 +48,6 @@ public class KNXService {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)	
-	@Path("state")
-	public String getState() {
-		KNXAdapter adapter = (KNXAdapter) context.getAttribute("adapter");
-		return "{ \"value\": \"" + adapter.getState() +"\" }";
-	}
-
-	@GET
-	@Produces(MediaType.APPLICATION_JSON)	
 	@Path("lastconnect")
 	public String getLastConnect() {
 		KNXAdapter adapter = (KNXAdapter) context.getAttribute("adapter");

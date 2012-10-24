@@ -41,7 +41,7 @@ public class WebContainerStartup implements ServletContextListener {
 		logger.info("Initializing context");
 		// TODO should probably set DeviceManager here instead.
 		KNXAdapter adapter = KNXAdapter.getInstance();
-		//adapter.start();
+		adapter.connect();
 		event.getServletContext().setAttribute("adapter", adapter);
 		
 		logger.info("Connecting to Google Drive");
@@ -105,7 +105,7 @@ public class WebContainerStartup implements ServletContextListener {
 		logger.info("Destroying context");
 		logger.info("Stopping KNX adapter");
 		KNXAdapter adapter = (KNXAdapter) event.getServletContext().getAttribute("adapter");
-		adapter.stop();
+		adapter.disconnect();
 		
 		// Manually close all LogServices... Tomcat recognizes hung threads when reloading app.
 		// TODO: Bug in calimero code?

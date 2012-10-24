@@ -75,13 +75,10 @@ public class KNXAdapter {
 	
 	private KNXNetworkLink link;
 	private ProcessCommunicator pc;
+	private KNXProcessListener listener = new KNXProcessListener();
 	
 	private static final String CACHE_NAME = "distributed-knx-cache";  // correspond with name in ehcache.xml.
 	List<String> booleanGroupAddresses = new ArrayList<String>();
-	
-	//public boolean started = false;
-	public enum State { STARTED, STOPPED, SPUTTER, MISCONFIG, DETACHED, LINK_CLOSED }
-	private State state = State.STOPPED;
 	
 	private Date lastConnected;	
 	
@@ -123,13 +120,6 @@ public class KNXAdapter {
 		return instance;
 	}
 	
-	/**
-	 * Start the adapter operation.  This will connect the adapter to the KNX network.
-	 */
-	public void start() {
-		this.connect();
-		this.prefetch();
-	}
 	
 	/**
 	 * prefetch state from KNX.  This method will send out read requests for all known devices.  
@@ -190,7 +180,6 @@ public class KNXAdapter {
 			if (pc != null) {
 				pc.detach();
 			}
-			state = State.SPUTTER;
 			return false;
 		}
 		if (!link.isOpen()) {
@@ -199,41 +188,11 @@ public class KNXAdapter {
 				pc.detach();
 			}
 			link.close();
-			state = state.SPUTTER;
-			return false;
-		}
-		if (state == State.DETACHED) {
-			logger.warning("KNXProcessListener detached!");
 			return false;
 		}
 
 		logger.fine("Link is OK!");
 		return true;		
-	}
-	
-	public String getState() {
-		String retVal = "UNDEFINED";
-		switch (state) {
-			case STARTED:
-				retVal =  "STARTED";
-				break;
-			case STOPPED:
-				retVal = "STOPPED";
-				break;
-			case SPUTTER:
-				retVal = "SPUTTER";
-				break;
-			case MISCONFIG:
-				retVal = "MISCONFIG";
-				break;
-			case DETACHED:
-				retVal = "DETACHED";
-				break;
-			case LINK_CLOSED: 
-				retVal = "LINK_CLOSED";
-				break;
-		}
-		return retVal;
 	}
 	
 	public String getLastConnect() {
@@ -245,11 +204,9 @@ public class KNXAdapter {
 		return retVal;
 	}
 	
-	public void connect() {
+	public synchronized void connect() {
 		logger.fine("Connecting KNX");
-		// Cleanup
-		this.stop();		
-		
+	
 		// find own IP address
 		InetAddress localAddress = null;
 		try {
@@ -266,8 +223,6 @@ public class KNXAdapter {
 		} catch (UnknownHostException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-			
-			state = State.MISCONFIG;
 			return;
 		}
 		logger.info("Using ip address: " + localAddress.getHostAddress());
@@ -280,8 +235,7 @@ public class KNXAdapter {
 					new InetSocketAddress(InetAddress.getByName("192.168.2.150"), KNXnetIPConnection.IP_PORT), 
 					false, // don't use NAT
 					TPSettings.TP1);  // select TP1
-			link.addLinkListener(new NetworkLinkListener() {
-				
+			link.addLinkListener(new NetworkLinkListener() {				
 				@Override
 				public void linkClosed(CloseEvent e) {
 					if (!e.isUserRequest()) {
@@ -291,43 +245,54 @@ public class KNXAdapter {
 					if (!link.isOpen()) {
 						logger.severe("KNX Link lost!");
 					}
+					logger.warning("Through the cracks: " + e.getSource());
 				}
 				
 				@Override
-				public void indication(FrameEvent e) {}
+				public void indication(FrameEvent e) {
+					logger.fine("INDICATION: " + e.toString());				
+				}
 				
 				@Override
-				public void confirmation(FrameEvent e) {}
+				public void confirmation(FrameEvent e) {
+					logger.fine("CONFIRMATION: " + e.toString());
+				}
 			});
+			
+			if (pc != null) {
+				pc.removeProcessListener(listener);
+				pc.detach();
+			}
+			
 			pc = new ProcessCommunicatorImpl(link);
-			pc.addProcessListener(new KNXProcessListener(this));
+			pc.setResponseTimeout(2);  // TODO - make configurable?
+			if (listener != null) {
+				pc.addProcessListener(listener);
+			}
+
 
 		} catch (KNXException | UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			state = State.SPUTTER;
 			return;
 		}
 		
 		// set state
-		state = State.STARTED;			
 		this.lastConnected = new Date();
 	}
 	
-	public void stop() {
-		logger.info("Stopping KNX Adapter");
+
+	public void disconnect() {
 		if (pc != null) {
+			pc.removeProcessListener(listener);
 			pc.detach();
-			pc = null;
 		}
-		if (link != null) {			
+		if (link != null) {
 			link.close();
 			link = null;
-		}
-		
-		state = State.STOPPED;
-	}
-
+		}		
+	}	
+	
 	/**
 	 * add KNX group address updates to cache
 	 * 
@@ -347,11 +312,7 @@ public class KNXAdapter {
 
 	}
 	
-	public void sendBoolean(String groupAddress, boolean value) {
-		if (state != State.STARTED) {
-			logger.warning("Can't send: KNX Adapter not started");
-			return;
-		}
+	public synchronized void sendBoolean(String groupAddress, boolean value) {
 		try {
 			GroupAddress address = new GroupAddress(groupAddress);
 			pc.write(address, value);
@@ -361,11 +322,7 @@ public class KNXAdapter {
 		}
 	}
 	
-	public void sendIntUnscaled(String groupAddress, int value) {
-		if (state != State.STARTED) {
-			logger.warning("Can't send: KNX Adapter not started");
-			return;
-		}
+	public synchronized void sendIntUnscaled(String groupAddress, int value) {
 		try {
 			GroupAddress address = new GroupAddress(groupAddress);			
 			pc.write(address, value, ProcessCommunicator.UNSCALED);
@@ -397,13 +354,9 @@ public class KNXAdapter {
 		return (String) valueEl.getValue();		
 	}
 
-	public void setDetached() {
-		logger.info("Flagging KNXProcessListener and Link to be detached");
-		state = State.DETACHED;		
-	}
-
 	public void registerBooleanGroup(String groupAddress) {
 		this.booleanGroupAddresses.add(groupAddress);
 	}
+
 	
 }
