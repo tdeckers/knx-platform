@@ -1,5 +1,6 @@
 package com.ducbase.knxplatform.adapters;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import tuwien.auto.calimero.DetachEvent;
@@ -17,8 +18,8 @@ public class KNXProcessListener implements ProcessListener {
 	
 	private KNXAdapter adapter;
 
-	public KNXProcessListener() {
-		this.adapter = KNXAdapter.getInstance();
+	public KNXProcessListener(KNXAdapter adapter) {
+		this.adapter = adapter;
 	}
 
 	@Override
@@ -27,6 +28,13 @@ public class KNXProcessListener implements ProcessListener {
 		String src = e.getSourceAddr().toString();
 		byte[] asdu = e.getASDU();
 		
+		// Need to validate asdu length!  If length == 0, then a RuntimeException is thrown.
+		// This will cause the Listener to stop receiving messages!
+		if (asdu.length == 0) {
+			logger.fine("Zero length ASDU received, ignoring.");
+			return;
+		}
+		
 		// New processing logic!!
 		// If found in boolean addresses, store in cache.
 		if (adapter.booleanGroupAddresses.contains(dst)) {
@@ -34,50 +42,53 @@ public class KNXProcessListener implements ProcessListener {
 		}
 		// End new processing logic !!
 		
-
-		logger.fine(src + " -> " + dst + ": " + asdu.length);
-		// Alarm status
-		if (dst.startsWith("0/1/")) {
-			this.writeBoolean(dst, asdu);
-		}
-		// Lights dimming value
-		if (dst.startsWith("1/3/")) {
-			this.writePercentage(dst, asdu);
-		}
-		// Status lights
-		if (dst.startsWith("1/4/")) {
-			this.writeBoolean(dst, asdu);
-		}
-		// Heating on/off
-		if (dst.equals("2/0/4")) {
-			this.writeBoolean(dst, asdu);			
-		}
-		// Actual temperature (rooms + outside + floor)
-		if (dst.startsWith("2/1/") || dst.startsWith("2/6/")) {
-			this.writeTemperature(dst, asdu);
-		}
-		// Setpoint temperature
-		if (dst.startsWith("2/2/")) {
-			this.writeTemperature(dst, asdu);
-		}
-		// Heating variable
-		if(dst.startsWith("2/3/")) {
-			this.writePercentage(dst, asdu);
-		}
-		// Operating mode
-		if (dst.startsWith("2/4/")) {
-			// TODO: not implemented
-		}
-		// Shutter position
-		if (dst.startsWith("3/3/")) {
-			this.writePercentage(dst, asdu);
+		try {
+			logger.fine(src + " -> " + dst + ": " + asdu.length);
+			// Alarm status
+			if (dst.startsWith("0/1/")) {
+				this.writeBoolean(dst, asdu);
+			}
+			// Lights dimming value
+			if (dst.startsWith("1/3/")) {
+				this.writePercentage(dst, asdu);
+			}
+			// Status lights
+			if (dst.startsWith("1/4/")) {
+				this.writeBoolean(dst, asdu);
+			}
+			// Heating on/off
+			if (dst.equals("2/0/4")) {
+				this.writeBoolean(dst, asdu);			
+			}
+			// Actual temperature (rooms + outside + floor)
+			if (dst.startsWith("2/1/") || dst.startsWith("2/6/")) {
+				this.writeTemperature(dst, asdu);
+			}
+			// Setpoint temperature
+			if (dst.startsWith("2/2/")) {
+				this.writeTemperature(dst, asdu);
+			}
+			// Heating variable
+			if(dst.startsWith("2/3/")) {
+				this.writePercentage(dst, asdu);
+			}
+			// Operating mode
+			if (dst.startsWith("2/4/")) {
+				// TODO: not implemented
+			}
+			// Shutter position
+			if (dst.startsWith("3/3/")) {
+				this.writePercentage(dst, asdu);
+			}
+		}catch (Exception ex) {
+			logger.log(Level.WARNING, "EXCEPTION", ex);
 		}
 
 	}
 
 	@Override
 	public void detached(DetachEvent e) {
-		logger.warning("KNXProcessListener detached from link");
+		logger.severe("KNXProcessListener detached from link");
 	}
 	
 	private void writePercentage(String dst, byte[] asdu) {

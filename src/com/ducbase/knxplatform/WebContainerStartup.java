@@ -42,6 +42,7 @@ public class WebContainerStartup implements ServletContextListener {
 		// TODO should probably set DeviceManager here instead.
 		KNXAdapter adapter = KNXAdapter.getInstance();
 		adapter.connect();
+		adapter.prefetch();
 		event.getServletContext().setAttribute("adapter", adapter);
 		
 		logger.info("Connecting to Google Drive");

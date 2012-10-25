@@ -40,6 +40,7 @@ import tuwien.auto.calimero.process.ProcessCommunicator;
 import tuwien.auto.calimero.process.ProcessCommunicatorImpl;
 import tuwien.auto.calimero.process.ProcessEvent;
 import tuwien.auto.calimero.process.ProcessListener;
+import tuwien.auto.calimero.process.ProcessListenerEx;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -75,7 +76,7 @@ public class KNXAdapter {
 	
 	private KNXNetworkLink link;
 	private ProcessCommunicator pc;
-	private KNXProcessListener listener = new KNXProcessListener();
+	private KNXProcessListener listener;
 	
 	private static final String CACHE_NAME = "distributed-knx-cache";  // correspond with name in ehcache.xml.
 	List<String> booleanGroupAddresses = new ArrayList<String>();
@@ -96,6 +97,8 @@ public class KNXAdapter {
 	 */
 	private KNXAdapter() {
 		logger.info("Creating KNX Adapter");
+		// Adding listener
+		listener = new KNXProcessListener(this);
 		
 		// start cache
 		logger.fine("Creating cache");
@@ -128,7 +131,7 @@ public class KNXAdapter {
 	 * TODO This is a hacked up version.  This should load from a list of configured devices.
 	 * 
 	 */
-	private void prefetch() {
+	public void prefetch() {
 		logger.info("Prefetching states from KNX");
 		String[] boolGroups = {"0/1/0", "0/1/1", "0/1/3", "0/1/4", // Alarm status.
 				"2/0/4"};	// heating on/off
@@ -205,7 +208,7 @@ public class KNXAdapter {
 	}
 	
 	public synchronized void connect() {
-		logger.fine("Connecting KNX");
+		logger.fine("Connecting to KNX");
 	
 		// find own IP address
 		InetAddress localAddress = null;
@@ -245,17 +248,17 @@ public class KNXAdapter {
 					if (!link.isOpen()) {
 						logger.severe("KNX Link lost!");
 					}
-					logger.warning("Through the cracks: " + e.getSource());
+					logger.severe("Through the cracks: " + e.getSource());
 				}
 				
 				@Override
 				public void indication(FrameEvent e) {
-					logger.fine("INDICATION: " + e.toString());				
+					// logger.fine("INDICATION: " + e.toString());				
 				}
 				
 				@Override
 				public void confirmation(FrameEvent e) {
-					logger.fine("CONFIRMATION: " + e.toString());
+					// logger.fine("CONFIRMATION: " + e.toString());
 				}
 			});
 			
@@ -269,8 +272,7 @@ public class KNXAdapter {
 			if (listener != null) {
 				pc.addProcessListener(listener);
 			}
-
-
+			
 		} catch (KNXException | UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -280,9 +282,9 @@ public class KNXAdapter {
 		// set state
 		this.lastConnected = new Date();
 	}
-	
 
 	public void disconnect() {
+		logger.info("Disconnecting from KNX");
 		if (pc != null) {
 			pc.removeProcessListener(listener);
 			pc.detach();
@@ -324,8 +326,10 @@ public class KNXAdapter {
 	
 	public synchronized void sendIntUnscaled(String groupAddress, int value) {
 		try {
-			GroupAddress address = new GroupAddress(groupAddress);			
+			GroupAddress address = new GroupAddress(groupAddress);
+			logger.fine("About to send...");
 			pc.write(address, value, ProcessCommunicator.UNSCALED);
+			logger.fine("Sent.");
 		} catch (KNXException e) {
 			// TODO Auto-generated catch block
 //			Oct 06, 2012 7:25:57 PM org.apache.catalina.realm.LockOutRealm authenticate
