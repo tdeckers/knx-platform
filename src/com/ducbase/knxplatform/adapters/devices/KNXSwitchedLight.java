@@ -1,28 +1,46 @@
 package com.ducbase.knxplatform.adapters.devices;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
+import tuwien.auto.calimero.GroupAddress;
+import tuwien.auto.calimero.datapoint.Datapoint;
+import tuwien.auto.calimero.datapoint.StateDP;
+import tuwien.auto.calimero.dptxlator.DPT;
+import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
+import tuwien.auto.calimero.exception.KNXFormatException;
 
 import com.ducbase.knxplatform.adapters.KNXAdapter;
 import com.ducbase.knxplatform.devices.SwitchedLight;
 
 
 @XmlRootElement
-public class KNXSwitchedLight extends SwitchedLight {
+public class KNXSwitchedLight extends SwitchedLight implements KNXDevice {
 
 	private KNXAdapter adapter;
+	
 	private String stateGroup;
+	private DPT stateGroupType = DPTXlatorBoolean.DPT_SWITCH;
+	
 	private String switchGroup;
+	private DPT switchGroupType = DPTXlatorBoolean.DPT_SWITCH;
 	
 	public KNXSwitchedLight() {		
 	}
 	
-	public KNXSwitchedLight(String stateGroup, String switchGroup) {
+	public KNXSwitchedLight(String name, String stateGroup, String switchGroup) {
+		this.setName(name);
 		this.stateGroup = stateGroup;
 		this.switchGroup = switchGroup;
 		
 		this.adapter = KNXAdapter.getInstance();
-		adapter.registerBooleanGroup(stateGroup);
 	}	
 	
 	public String getStateGroup() {
@@ -68,6 +86,34 @@ public class KNXSwitchedLight extends SwitchedLight {
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	@Override
+	public String[] getListenGroups() {
+		return new String[] { this.stateGroup };
+	}
+	
+	public Map<String, DPT> getTypeMap() {
+		Map<String, DPT> map = new HashMap<String, DPT>();
+		map.put(this.stateGroup, this.stateGroupType);
+		map.put(this.switchGroup, this.switchGroupType);
+		return map;
+	}
+
+	@Override
+	public void update(JSONObject object) throws DeviceException {
+		boolean on;
+		try {
+			 on = object.getBoolean("on");  // this is how the bean property is called (see this class)
+		} catch (JSONException e) {
+			// getBoolean throws a JSONException is not found.
+			throw new DeviceException("property 'on' not found", e);
+		} 
+		if (on) {
+			this.turnOn();
+		} else {
+			this.turnOff();
 		}
 	}
 

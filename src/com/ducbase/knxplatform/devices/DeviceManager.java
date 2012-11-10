@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.ducbase.knxplatform.adapters.devices.KNXSwitchedLight;
+import tuwien.auto.calimero.datapoint.Datapoint;
+
+import com.ducbase.knxplatform.adapters.KNXAdapter;
+import com.ducbase.knxplatform.adapters.devices.KNXDevice;
 
 public class DeviceManager {
 	
@@ -15,17 +18,7 @@ public class DeviceManager {
 	private AtomicInteger idGen = new AtomicInteger(1);
 	
 	private DeviceManager() {
-		// TODO change with reading of configuration
-		SwitchedLight light = new KNXSwitchedLight("1/1/45", "1/4/45");
-		light.setId(idGen.getAndIncrement());
-		light.setName("Light of my life");
-		light.setDescription("This is a light that shines.");
-		devices.add(light);
-		SwitchedLight light2 = new KNXSwitchedLight("1/1/44", "1/4/44");
-		light2.setId(idGen.getAndIncrement());
-		light2.setName("Second light of my life");
-		light2.setDescription("This is a light that doesn't shines.");
-		devices.add(light2);
+
 	}
 	
 	public static DeviceManager getInstance() {
@@ -55,5 +48,22 @@ public class DeviceManager {
 		}
 		return null;
 	}	
+	
+	public int addDevice(Device device) {
+		int id = idGen.getAndIncrement();
+		device.setId(id);
+		devices.add(device);
+		if (device instanceof KNXDevice) {
+			KNXDevice knxDevice = (KNXDevice) device;
+			KNXAdapter adapter = KNXAdapter.getInstance();
+			// Get mapping from device and add to the KNX adapter
+			adapter.addTypeMap(knxDevice.getTypeMap());
+			
+			// register groups for which we listen on KNX bus
+			String[] listenGroups = knxDevice.getListenGroups();
+			adapter.registerListenFor(listenGroups, device.getId());
+		}
+		return id;
+	}
 	
 }

@@ -1,17 +1,11 @@
 package com.ducbase.knxplatform;
 
+import java.io.FileNotFoundException;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletContext;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
+import javax.xml.bind.JAXBException;
 
-import com.ducbase.knxplatform.adapters.KNXAdapter;
+import com.ducbase.knxplatform.config.ConfigManager;
 
 
 
@@ -30,6 +24,13 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		logger.info("Starting");
+		
+		try {
+			ConfigManager.loadDevices();
+		} catch (JAXBException | FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 

@@ -13,8 +13,4 @@ public abstract class SwitchedLight extends Device {
 	abstract public void turnOff();
 	abstract public void toggle();
 	
-	public String getType() {
-		return SwitchedLight.class.getSimpleName();
-	}
-
 }

@@ -1,5 +1,6 @@
 package com.ducbase.knxplatform;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Date;
@@ -7,6 +8,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.xml.bind.JAXBException;
 
 import org.quartz.Job;
 import org.quartz.JobDetail;
@@ -22,6 +24,7 @@ import tuwien.auto.calimero.log.LogManager;
 import tuwien.auto.calimero.log.LogService;
 
 import com.ducbase.knxplatform.adapters.KNXAdapter;
+import com.ducbase.knxplatform.config.ConfigManager;
 import com.ducbase.knxplatform.connectors.GoogleDriveConnector;
 import com.ducbase.knxplatform.scheduling.GoogleUploadJob;
 import com.ducbase.knxplatform.scheduling.KNXAdapterCheckJob;
@@ -39,11 +42,21 @@ public class WebContainerStartup implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
 		logger.info("Initializing context");
-		// TODO should probably set DeviceManager here instead.
+		
+		try {
+			ConfigManager.loadDevices();
+		} catch (FileNotFoundException | JAXBException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Config failure", e);
+		}
+		logger.fine("Devices loaded.");
+		
+		
 		KNXAdapter adapter = KNXAdapter.getInstance();
 		adapter.connect();
 		adapter.prefetch();
-		event.getServletContext().setAttribute("adapter", adapter);
+		// TODO: no need to set this here.  KNXAdapter is now accessible as singleton.
+		event.getServletContext().setAttribute("adapter", adapter);		
 		
 		logger.info("Connecting to Google Drive");
 		GoogleDriveConnector connector = null;
@@ -76,7 +89,7 @@ public class WebContainerStartup implements ServletContextListener {
 					.build();
 			
 			logger.info("Scheduling Google job. [Scheduler: " + scheduler.getSchedulerName() + "]");
-			scheduler.scheduleJob(googleJob, googleTrigger);	
+			scheduler.scheduleJob(googleJob, googleTrigger);
 			
 			// Job for checking KNX adapter link
 			JobDetail knxJob = newJob(KNXAdapterCheckJob.class)

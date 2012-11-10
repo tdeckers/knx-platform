@@ -17,8 +17,21 @@ public class WebSocketManager {
 	AtomicInteger connectionIds = new AtomicInteger(0);
 	String connectionPrefix = "GUEST_";
 	
-	public WebSocketManager() {
+	private static WebSocketManager instance;
+	
+	private WebSocketManager() {
 		connections = new ArrayList<UIMessage>();
+	}
+	
+	public static WebSocketManager getInstance() {
+		if (instance == null) {
+			synchronized(WebSocketManager.class) {
+				if (instance == null) {
+					instance = new WebSocketManager();
+				}
+			}
+		}
+		return instance;
 	}
 
 	public void add(UIMessage uiMessage) {

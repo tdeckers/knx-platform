@@ -1,0 +1,17 @@
+{
+	"devices": [
+		{
+			"type":"SwitchedLight",
+			"name":"Bureau Tom - vooraan",
+			"description":"description ... Bureau Tom - vooraan",
+			"statusGroup":  { "address":"1/4/20", "dptid":"1.001", "type":"state"}, <-- or can this be implemented in KNXSwitchedLight? yes!
+			"switchGroup": { "address":"1/1/18", "dptid":"1.001", "type":"command"} 
+		},
+		{
+			"type":"SwitchedLight",
+			"name":"Bureau Tom - bureau",
+			"statusGroup":"1/4/19",
+			"switchGroup":"1/1/17"
+		}
+	]
+}

@@ -2,13 +2,24 @@ package com.ducbase.knxplatform.api;
 
 import java.util.logging.Logger;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+
+import com.ducbase.knxplatform.adapters.devices.DeviceException;
 import com.ducbase.knxplatform.devices.Device;
 import com.ducbase.knxplatform.devices.DeviceManager;
 
@@ -35,8 +46,7 @@ public class DeviceResource {
 		  int intId = Integer.parseInt(id);
 		  Device device = manager.getDevice(intId);
 		  if ( device == null )
-			  throw new RuntimeException("Get: Device with " + id +  " not found");
-		  logger.fine(" ------------ " + device.getClass().getName());
+			  throw new WebApplicationException(Status.NOT_FOUND);
 		  return device;
 	  }
 	  
@@ -47,10 +57,37 @@ public class DeviceResource {
 		  int intId = Integer.parseInt(id);
 		  Device device = manager.getDevice(intId);
 		  if ( device == null )
-			  throw new RuntimeException("Get: Device with " + id +  " not found");
+			  throw new WebApplicationException(404); // NOT FOUND
 		  return device;
-	  }	  
+	  }
 	  
-	  // TODO implement PUT / DELETE
+	  // updates to devices (e.g. switch lights)
+	  @PUT
+	  @Consumes({MediaType.APPLICATION_JSON})
+	  public void updateDevice(JSONObject object) {
+		  int intId = Integer.parseInt(id);
+		  Device device = manager.getDevice(intId);
+		  if (device == null )
+			  throw new WebApplicationException(Status.NOT_FOUND);
+		  try {
+			  device.update(object);
+		  } catch (DeviceException e) {
+			  logger.warning(e.getMessage() + " --- " + object.toString());
+			  throw new WebApplicationException(e, Status.BAD_REQUEST);
+		  }  
+	  }
+	  	
+	  // delete devices - NOT SUPPORTED
+	  @DELETE
+	  public void deleteNotImplemented() {
+		  throw new WebApplicationException(Status.fromStatusCode(501));
+	  }
+	  
+	  // post devices - NOT SUPPORTED
+	  @POST
+	  public void postNotImplemented() {
+		  throw new WebApplicationException(Status.fromStatusCode(501));
+	  }
+	  
 	  
 }

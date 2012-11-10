@@ -1,7 +1,5 @@
 package com.ducbase.knxplatform.adapters;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -10,23 +8,23 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
 
+import com.ducbase.knxplatform.WebSocketManager;
+
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Element;
+import net.sf.ehcache.management.ManagementService;
 import tuwien.auto.calimero.CloseEvent;
-import tuwien.auto.calimero.DetachEvent;
 import tuwien.auto.calimero.FrameEvent;
 import tuwien.auto.calimero.GroupAddress;
-import tuwien.auto.calimero.IndividualAddress;
-import tuwien.auto.calimero.cemi.CEMILData;
+import tuwien.auto.calimero.datapoint.Datapoint;
 import tuwien.auto.calimero.dptxlator.DPT;
-import tuwien.auto.calimero.dptxlator.DPTXlator2ByteFloat;
-import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
 import tuwien.auto.calimero.exception.KNXException;
 import tuwien.auto.calimero.exception.KNXFormatException;
 import tuwien.auto.calimero.exception.KNXTimeoutException;
@@ -38,24 +36,6 @@ import tuwien.auto.calimero.link.event.NetworkLinkListener;
 import tuwien.auto.calimero.link.medium.TPSettings;
 import tuwien.auto.calimero.process.ProcessCommunicator;
 import tuwien.auto.calimero.process.ProcessCommunicatorImpl;
-import tuwien.auto.calimero.process.ProcessEvent;
-import tuwien.auto.calimero.process.ProcessListener;
-import tuwien.auto.calimero.process.ProcessListenerEx;
-
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.management.ManagementService;
-
-import com.ducbase.knxplatform.config.DeviceConfig;
-import com.ducbase.knxplatform.config.DevicesConfig;
-import com.ducbase.knxplatform.devices.Device;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 /**
  * abstraction layer for the KNX interface.
@@ -79,7 +59,9 @@ public class KNXAdapter {
 	private KNXProcessListener listener;
 	
 	private static final String CACHE_NAME = "distributed-knx-cache";  // correspond with name in ehcache.xml.
-	List<String> booleanGroupAddresses = new ArrayList<String>();
+	
+	Map<String, Integer> listenFor = new HashMap<String, Integer>();
+	Map<String, DPT> typeMap = new HashMap<String, DPT>();
 	
 	private Date lastConnected;	
 	
@@ -302,6 +284,7 @@ public class KNXAdapter {
 	 * @param value the String value of the group addresss
 	 * @param dpt the DPT object, describing the type of the group address
 	 */
+	@Deprecated
 	public void deviceUpdate(String groupAddress, String value, DPT dpt) {		
 		logger.fine("Updating cache for " + groupAddress);
 		Element valueElement = new Element(groupAddress, value);
@@ -311,8 +294,17 @@ public class KNXAdapter {
 		// btw: is dpt.getID() enough? Does it include the mainType of the DPT?
 		Element typeElement = new Element(groupAddress + "_dpt", dpt.getID());
 		cache.put(typeElement);		
-
 	}
+	
+	public void updateDevice(String groupAddress, String value) {
+		logger.fine("Updating cache for " + groupAddress);
+		Element valueElement = new Element(groupAddress, value);
+		cache.put(valueElement);
+		
+		// WebSocketManager wsMgr = WebSocketManager.getInstance();
+		// wsMgr.broadcast();
+	}
+	
 	
 	public synchronized void sendBoolean(String groupAddress, boolean value) {
 		try {
@@ -358,9 +350,21 @@ public class KNXAdapter {
 		return (String) valueEl.getValue();		
 	}
 
-	public void registerBooleanGroup(String groupAddress) {
-		this.booleanGroupAddresses.add(groupAddress);
+	/**
+	 * Register datapoints to listen for on the KNX bus, for device with id.
+	 * 
+	 * @param listenGroups
+	 * @param id
+	 */
+	public void registerListenFor(String[] listenGroups, int id) {
+		for(String dp: listenGroups) {
+			this.listenFor.put(dp, Integer.valueOf(id));
+		}
 	}
 
-	
+	public void addTypeMap(Map<String, DPT> typeMap) {
+		this.typeMap.putAll(typeMap);		
+	}
+
+
 }

@@ -3,6 +3,10 @@ package com.ducbase.knxplatform.devices;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.codehaus.jettison.json.JSONObject;
+
+import com.ducbase.knxplatform.adapters.devices.DeviceException;
+
 
 /**
  * 
@@ -14,7 +18,7 @@ public abstract class Device {
 	
 	private int id;
 	private String name;
-	private String description;	
+	private String description;
 	private String type;
 
 	public int getId() {
@@ -47,6 +51,8 @@ public abstract class Device {
 
 	public String toString() {
 		return "Device: " + name;
-	}	
+	}
+	
+	abstract public void update(JSONObject object) throws DeviceException;
 	
 }

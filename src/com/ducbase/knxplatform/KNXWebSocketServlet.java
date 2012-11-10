@@ -18,7 +18,7 @@ public class KNXWebSocketServlet extends WebSocketServlet {
 	
 	public KNXWebSocketServlet() {
 		logger.fine("Creating KNXWebSocketServlet");
-		manager = new WebSocketManager();
+		manager = WebSocketManager.getInstance();
 	}	
 	
 	@Override

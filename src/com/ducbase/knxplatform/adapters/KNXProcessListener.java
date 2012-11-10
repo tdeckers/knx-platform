@@ -4,10 +4,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import tuwien.auto.calimero.DetachEvent;
+import tuwien.auto.calimero.dptxlator.DPT;
+import tuwien.auto.calimero.dptxlator.DPTXlator;
 import tuwien.auto.calimero.dptxlator.DPTXlator2ByteFloat;
 import tuwien.auto.calimero.dptxlator.DPTXlator3BitControlled.DPT3BitControlled;
 import tuwien.auto.calimero.dptxlator.DPTXlator8BitUnsigned;
 import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
+import tuwien.auto.calimero.dptxlator.TranslatorTypes;
+import tuwien.auto.calimero.exception.KNXException;
 import tuwien.auto.calimero.exception.KNXFormatException;
 import tuwien.auto.calimero.process.ProcessEvent;
 import tuwien.auto.calimero.process.ProcessListener;
@@ -22,6 +26,9 @@ public class KNXProcessListener implements ProcessListener {
 		this.adapter = adapter;
 	}
 
+	/**
+	 * receives <code>ProcessEvent</code> from the KNX bus.
+	 */
 	@Override
 	public void groupWrite(ProcessEvent e) {
 		String dst = e.getDestination().toString();
@@ -36,9 +43,13 @@ public class KNXProcessListener implements ProcessListener {
 		}
 		
 		// New processing logic!!
-		// If found in boolean addresses, store in cache.
-		if (adapter.booleanGroupAddresses.contains(dst)) {
-			this.writeBoolean(dst, asdu);
+		if (adapter.listenFor.containsKey(dst)) {  // should we listen for this group?
+			if (!adapter.typeMap.containsKey(dst)) { // do we have a mapping?
+				// this can only happen if something went wrong when device got added.
+				logger.warning("TypeMap doesn't contain mapping for destination " + dst + ". Ignoring...");
+				return;
+			}
+			this.receive(dst, asdu); // process the received message
 		}
 		// End new processing logic !!
 		
@@ -131,6 +142,22 @@ public class KNXProcessListener implements ProcessListener {
 		xlate.setAppendUnit(false);
 		adapter.deviceUpdate(dst, xlate.getValue(), DPTXlatorBoolean.DPT_SWITCH);
 		logger.fine("SWITCH: " + xlate.getValue() + " " + DPTXlatorBoolean.DPT_SWITCH.getUnit());		
+	}
+	
+	private void receive(String dst, byte[] asdu) {
+		// Get DPT to figure out which translator to use.
+		DPT dpt = adapter.typeMap.get(dst);	
+		DPTXlator xlator;
+		try {
+			xlator = TranslatorTypes.createTranslator(dpt);
+		} catch (KNXException e) {
+			logger.warning("No translator could be created for type " + dpt.getID());
+			return; // stop processing.
+		}
+		xlator.setData(asdu);
+		xlator.setAppendUnit(false);
+		// Now update state
+		adapter.updateDevice(dst, xlator.getValue());
 	}
 	
 }
