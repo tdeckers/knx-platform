@@ -2,7 +2,6 @@ package com.ducbase.knxplatform.adapters.devices;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -10,12 +9,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import tuwien.auto.calimero.GroupAddress;
-import tuwien.auto.calimero.datapoint.Datapoint;
-import tuwien.auto.calimero.datapoint.StateDP;
 import tuwien.auto.calimero.dptxlator.DPT;
 import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
-import tuwien.auto.calimero.exception.KNXFormatException;
 
 import com.ducbase.knxplatform.adapters.KNXAdapter;
 import com.ducbase.knxplatform.devices.SwitchedLight;
