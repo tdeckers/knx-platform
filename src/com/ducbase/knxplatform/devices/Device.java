@@ -53,6 +53,12 @@ public abstract class Device {
 		return "Device: " + name;
 	}
 	
+	/**
+	 * method used by REST api to update device.
+	 * 
+	 * @param object
+	 * @throws DeviceException
+	 */
 	abstract public void update(JSONObject object) throws DeviceException;
 	
 }

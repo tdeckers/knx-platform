@@ -8,8 +8,13 @@ public class ConfigDevice {
 	public String name;
 	public String id;
 	public String description;
-	public String statusGroup;
-	public String switchGroup;
+	public String gstatus;
+	public String gswitch;
+	public String gvariable;
+	public String gactual;
+	public String gsetpointr;
+	public String gsetpointw;
+	public String gmode;
 	
 	public String toString() {
 		return name + "[" + type + "]";

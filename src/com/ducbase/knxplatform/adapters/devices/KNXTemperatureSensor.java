@@ -21,8 +21,8 @@ public class KNXTemperatureSensor extends TemperatureSensor implements
 	
 	private KNXAdapter adapter;
 	
-	private String stateGroup;
-	private DPT stateGroupType = DPTXlator2ByteFloat.DPT_TEMPERATURE;	
+	private String actualGroup;
+	private DPT actualGroupType = DPTXlator2ByteFloat.DPT_TEMPERATURE;	
 	
 	public KNXTemperatureSensor() {
 		
@@ -31,28 +31,28 @@ public class KNXTemperatureSensor extends TemperatureSensor implements
 	public KNXTemperatureSensor(String id, String name, String stateGroup) {
 		this.setId(id);
 		this.setName(name);
-		this.stateGroup = stateGroup;
+		this.actualGroup = stateGroup;
 		
 		this.adapter = KNXAdapter.getInstance();				
 	}
 
 	@Override
 	public String[] getListenGroups() {
-		return new String[] { this.stateGroup };
+		return new String[] { this.actualGroup };
 	}
 
 	public String getStateGroup() {
-		return stateGroup;
+		return actualGroup;
 	}
 
 	public void setStateGroup(String stateGroup) {
-		this.stateGroup = stateGroup;
+		this.actualGroup = stateGroup;
 	}
 
 	@Override
 	public Map<String, DPT> getTypeMap() {
 		Map<String, DPT> map = new HashMap<String, DPT>();
-		map.put(this.stateGroup, this.stateGroupType);
+		map.put(this.actualGroup, this.actualGroupType);
 		return map;
 
 	}
@@ -60,8 +60,14 @@ public class KNXTemperatureSensor extends TemperatureSensor implements
 	@XmlElement
 	@Override
 	public Float getTemperature() {
-		String stateString = adapter.getValueForGroupAddress(stateGroup);
-		return Float.parseFloat(stateString);
+		String actualString = adapter.getValueForGroupAddress(actualGroup);
+		float temp = 0;
+		try {
+			temp = Float.parseFloat(actualString);
+		} catch (NumberFormatException|NullPointerException e) {
+			// ignore, we've initialized to 0;
+		}
+		return temp;
 	}
 
 	@Override

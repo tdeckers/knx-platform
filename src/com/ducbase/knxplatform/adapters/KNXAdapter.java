@@ -136,6 +136,15 @@ public class KNXAdapter {
 			}
 		}
 		
+		String scalingGroupsPrefix2 = "2/4/";  // just mode variables for now.
+		for(int i = 0; i <= 9; i++) {
+			try {
+				pc.readUnsigned(new GroupAddress(scalingGroupsPrefix2 + i), ProcessCommunicator.UNSCALED);
+			} catch (KNXException e) {
+				e.printStackTrace();
+			}
+		}		
+		
 		String[] floatGroupPrefixes = {"2/1/", //actual temp 
 								"2/2/"}; // setpoint temp
 		for(String prefix: floatGroupPrefixes) {
@@ -338,6 +347,20 @@ public class KNXAdapter {
 			e.printStackTrace();
 		}
 	}	
+	
+	public synchronized void sendFloat(String groupAddress, float value) {
+		try {
+			GroupAddress address = new GroupAddress(groupAddress);
+			logger.fine("About to send...");
+			pc.write(address, value);
+			logger.fine("Sent.");
+		} catch (KNXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
 	
 	/** 
 	 * TODO remove this method... temporary one.

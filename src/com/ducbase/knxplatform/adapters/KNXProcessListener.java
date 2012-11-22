@@ -49,7 +49,9 @@ public class KNXProcessListener implements ProcessListener {
 				logger.warning("TypeMap doesn't contain mapping for destination " + dst + ". Ignoring...");
 				return;
 			}
+			logger.fine("Receive from " + src);
 			this.receive(dst, asdu); // process the received message
+			return; // TODO: can remove this once old processing logic is gone.
 		}
 		// End new processing logic !!
 		
@@ -158,6 +160,7 @@ public class KNXProcessListener implements ProcessListener {
 		xlator.setAppendUnit(false);
 		// Now update state
 		adapter.updateDevice(dst, xlator.getValue());
+		logger.fine("UPDATE: " + dst + " <== " + xlator.getValue());
 	}
 	
 }

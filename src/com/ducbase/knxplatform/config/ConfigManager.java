@@ -14,6 +14,7 @@ import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
 import com.ducbase.knxplatform.adapters.KNXAdapter;
 import com.ducbase.knxplatform.adapters.devices.KNXSwitchedLight;
 import com.ducbase.knxplatform.adapters.devices.KNXTemperatureSensor;
+import com.ducbase.knxplatform.adapters.devices.KNXThermostat;
 import com.ducbase.knxplatform.devices.DeviceManager;
 import com.sun.jersey.api.json.JSONJAXBContext;
 import com.sun.jersey.api.json.JSONUnmarshaller;
@@ -45,14 +46,19 @@ public class ConfigManager {
 			// TBD: find class from device.type and do smart things with it.
 			
 			if ("switchedlight".equalsIgnoreCase(device.type)) {
-				KNXSwitchedLight light = new KNXSwitchedLight(device.id, device.name, device.statusGroup, device.switchGroup);
+				KNXSwitchedLight light = new KNXSwitchedLight(device.id, device.name, device.gstatus, device.gswitch);
 				light.setDescription(device.description);
 				manager.addDevice(light);
 			}
 			if ("tempSensor".equalsIgnoreCase(device.type)) {
-				KNXTemperatureSensor sensor = new KNXTemperatureSensor(device.id, device.name, device.statusGroup);
+				KNXTemperatureSensor sensor = new KNXTemperatureSensor(device.id, device.name, device.gactual);
 				sensor.setDescription(device.description);
 				manager.addDevice(sensor);
+			}
+			if ("thermostat".equalsIgnoreCase(device.type)) {
+				KNXThermostat thermostat = new KNXThermostat(device.id, device.name, device.gactual, device.gsetpointr, device.gsetpointw, device.gvariable, device.gmode);
+				thermostat.setDescription(device.description);
+				manager.addDevice(thermostat);				
 			}
 		}
 	
