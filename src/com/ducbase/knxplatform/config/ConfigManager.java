@@ -45,12 +45,12 @@ public class ConfigManager {
 			// TBD: find class from device.type and do smart things with it.
 			
 			if ("switchedlight".equalsIgnoreCase(device.type)) {
-				KNXSwitchedLight light = new KNXSwitchedLight(device.name, device.statusGroup, device.switchGroup);
+				KNXSwitchedLight light = new KNXSwitchedLight(device.id, device.name, device.statusGroup, device.switchGroup);
 				light.setDescription(device.description);
 				manager.addDevice(light);
 			}
 			if ("tempSensor".equalsIgnoreCase(device.type)) {
-				KNXTemperatureSensor sensor = new KNXTemperatureSensor(device.name, device.statusGroup);
+				KNXTemperatureSensor sensor = new KNXTemperatureSensor(device.id, device.name, device.statusGroup);
 				sensor.setDescription(device.description);
 				manager.addDevice(sensor);
 			}

@@ -1,5 +1,8 @@
 package com.ducbase.knxplatform.gwt.client;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ducbase.knxplatform.gwt.client.ws.MessageEvent;
 import com.ducbase.knxplatform.gwt.client.ws.MessageHandler;
 import com.ducbase.knxplatform.gwt.client.ws.WebSocket;
@@ -21,10 +24,16 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class KNXUI implements EntryPoint {
 
 	private Resources resources = GWT.create(Resources.class);
+	private String baseUrl;
+	private List<Device> devices = new ArrayList<Device>();
 	
 	@Override
 	public void onModuleLoad() {
 
+		// Configure base Url of the application.  Use to configure devices.
+		// TODO: make this configurable if REST API is not with UI app.
+		baseUrl = getBaseUrl(); 
+		
 		RootPanel rootPanel = RootPanel.get("container");
 		rootPanel.getElement().getStyle().setPosition(Position.RELATIVE);
 		rootPanel.setSize("600px", "700px");
@@ -158,6 +167,18 @@ public class KNXUI implements EntryPoint {
 		absolutePanel.add(dimmedLight_1, 381, 10);
 		dimmedLight_1.setSize("30px", "30px");
 		
+		TemperatureSensor outsideTemp = new TemperatureSensor();
+		absolutePanel.add(outsideTemp, 21, 10);
+		//switchedLight_28.setSize("30px", "30px");
+		outsideTemp.setId("3");
+		devices.add(outsideTemp);
+		
+		TemperatureSensor livingFloor = new TemperatureSensor();
+		absolutePanel.add(livingFloor, 373, 278);
+		//temperatureSensor.setSize("36px", "18px");
+		livingFloor.setId("4");
+		devices.add(livingFloor);
+		
 		AbsolutePanel absolutePanel_1 = new AbsolutePanel();
 		tabPanel.add(absolutePanel_1, "Boven", false);
 		absolutePanel_1.setSize("580px", "707px");
@@ -185,14 +206,18 @@ public class KNXUI implements EntryPoint {
 		SwitchedLight switchedLight_1 = new SwitchedLight();
 		absolutePanel_1.add(switchedLight_1, 101, 188);
 		switchedLight_1.setSize("30px", "30px");
+		switchedLight_1.setId("2");
+		devices.add(switchedLight_1);
 		
 		SwitchedLight switchedLight_5 = new SwitchedLight();
 		absolutePanel_1.add(switchedLight_5, 446, 199);
 		switchedLight_5.setSize("30px", "30px");
 		
 		final SwitchedLight switchedLight_6 = new SwitchedLight();
+		switchedLight_6.setId("1");
 		absolutePanel_1.add(switchedLight_6, 209, 151);
 		switchedLight_6.setSize("30px", "30px");
+		devices.add(switchedLight_6);
 		
 		SwitchedLight switchedLight_7 = new SwitchedLight();
 		absolutePanel_1.add(switchedLight_7, 312, 245);
@@ -286,21 +311,15 @@ public class KNXUI implements EntryPoint {
 		
 		tabPanel.selectTab(0);
 
-		String[] pathArray = Window.Location.getPath().split("/");
-		StringBuffer newPathname = new StringBuffer();
-		for ( int i = 0; i < pathArray.length -1 ; i++ ) { // don't include the last part (which is index.html)
-			newPathname.append(pathArray[i]);
-			newPathname.append('/');
-		}
-		String baseUrl = newPathname.toString();
-		
-		newPathname.append("ws"); // lastly append the WebSocket endpoint.
+	
+		StringBuffer wsUrl = new StringBuffer(baseUrl); 
+				wsUrl.append("ws"); // lastly append the WebSocket endpoint.
 				
 		String url = new UrlBuilder()
 				.setProtocol("wss")
 				.setHost(Window.Location.getHostName())
 				.setPort(Integer.parseInt(Window.Location.getPort()))
-				.setPath(newPathname.toString())
+				.setPath(wsUrl.toString())
 				.buildString();
 		
 		WebSocket socket = WebSocket.create(url);
@@ -320,26 +339,29 @@ public class KNXUI implements EntryPoint {
 			}
 		});
 
-		// TODO: BAD BAD BAD ... need to replace this asap!!!!!
-		ServiceClient.url = baseUrl + "rest/devices/1";
-		
 		final ServiceClient client = new ServiceClient();
+		
 		Scheduler scheduler = Scheduler.get();
 		scheduler.scheduleFixedPeriod(new RepeatingCommand() {
 			@Override
 			public boolean execute() {
-				client.updateLight(switchedLight_6, label);
+				for (Device device: devices) {
+					client.updateDevice(device, label);
+				}
 				return true;
 			}}, 
 			5000); // every 5 seconds. 
 
-		switchedLight_6.addClickHandler(new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				client.setLight(switchedLight_6.isOn(), label);
-			}
-		});
 		
+	}
+
+	private String getBaseUrl() {
+		String[] pathArray = Window.Location.getPath().split("/");
+		StringBuffer tempUrl = new StringBuffer();
+		for ( int i = 0; i < pathArray.length -1 ; i++ ) { // don't include the last part (which is index.html)
+			tempUrl.append(pathArray[i]);
+			tempUrl.append('/');
+		}		
+		return tempUrl.toString();
 	}
 }

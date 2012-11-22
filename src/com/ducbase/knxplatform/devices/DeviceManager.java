@@ -14,9 +14,7 @@ public class DeviceManager {
 	List<Device> devices = new ArrayList<Device>();
 	
 	private static DeviceManager instance;
-	
-	private AtomicInteger idGen = new AtomicInteger(1);
-	
+			
 	private DeviceManager() {
 
 	}
@@ -40,18 +38,16 @@ public class DeviceManager {
 		return devices.size();
 	}
 
-	public Device getDevice(int intId) {
+	public Device getDevice(String id) {
 		for(Device device: devices) {
-			if (device.getId() == intId) {
+			if (device.getId()!= null && device.getId().equals(id)) {
 				return device;
 			}
 		}
 		return null;
 	}	
 	
-	public int addDevice(Device device) {
-		int id = idGen.getAndIncrement();
-		device.setId(id);
+	public String addDevice(Device device) {
 		devices.add(device);
 		if (device instanceof KNXDevice) {
 			KNXDevice knxDevice = (KNXDevice) device;
@@ -63,7 +59,7 @@ public class DeviceManager {
 			String[] listenGroups = knxDevice.getListenGroups();
 			adapter.registerListenFor(listenGroups, device.getId());
 		}
-		return id;
+		return device.getId();
 	}
 	
 }

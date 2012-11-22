@@ -6,6 +6,7 @@ public class ConfigDevice {
 	
 	public String type;	
 	public String name;
+	public String id;
 	public String description;
 	public String statusGroup;
 	public String switchGroup;

@@ -30,7 +30,8 @@ public class KNXSwitchedLight extends SwitchedLight implements KNXDevice {
 	public KNXSwitchedLight() {		
 	}
 	
-	public KNXSwitchedLight(String name, String stateGroup, String switchGroup) {
+	public KNXSwitchedLight(String id, String name, String stateGroup, String switchGroup) {
+		this.setId(id);
 		this.setName(name);
 		this.stateGroup = stateGroup;
 		this.switchGroup = switchGroup;

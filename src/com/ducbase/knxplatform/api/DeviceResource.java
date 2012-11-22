@@ -43,8 +43,7 @@ public class DeviceResource {
 	  @GET
 	  @Produces(MediaType.TEXT_XML)
 	  public Device getDeviceForBrowser() {
-		  int intId = Integer.parseInt(id);
-		  Device device = manager.getDevice(intId);
+		  Device device = manager.getDevice(id);
 		  if ( device == null )
 			  throw new WebApplicationException(Status.NOT_FOUND);
 		  return device;
@@ -54,8 +53,7 @@ public class DeviceResource {
 	  @GET
 	  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	  public Device getDevice() {
-		  int intId = Integer.parseInt(id);
-		  Device device = manager.getDevice(intId);
+		  Device device = manager.getDevice(id);
 		  if ( device == null )
 			  throw new WebApplicationException(404); // NOT FOUND
 		  return device;
@@ -65,8 +63,7 @@ public class DeviceResource {
 	  @PUT
 	  @Consumes({MediaType.APPLICATION_JSON})
 	  public void updateDevice(JSONObject object) {
-		  int intId = Integer.parseInt(id);
-		  Device device = manager.getDevice(intId);
+		  Device device = manager.getDevice(id);
 		  if (device == null )
 			  throw new WebApplicationException(Status.NOT_FOUND);
 		  try {

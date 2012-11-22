@@ -60,7 +60,7 @@ public class KNXAdapter {
 	
 	private static final String CACHE_NAME = "distributed-knx-cache";  // correspond with name in ehcache.xml.
 	
-	Map<String, Integer> listenFor = new HashMap<String, Integer>();
+	Map<String, String> listenFor = new HashMap<String, String>();  // datapoint - device id
 	Map<String, DPT> typeMap = new HashMap<String, DPT>();
 	
 	private Date lastConnected;	
@@ -356,9 +356,9 @@ public class KNXAdapter {
 	 * @param listenGroups
 	 * @param id
 	 */
-	public void registerListenFor(String[] listenGroups, int id) {
+	public void registerListenFor(String[] listenGroups, String id) {
 		for(String dp: listenGroups) {
-			this.listenFor.put(dp, Integer.valueOf(id));
+			this.listenFor.put(dp, id);
 		}
 	}
 

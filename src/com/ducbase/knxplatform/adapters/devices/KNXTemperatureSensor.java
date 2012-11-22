@@ -28,7 +28,8 @@ public class KNXTemperatureSensor extends TemperatureSensor implements
 		
 	}
 	
-	public KNXTemperatureSensor(String name, String stateGroup) {
+	public KNXTemperatureSensor(String id, String name, String stateGroup) {
+		this.setId(id);
 		this.setName(name);
 		this.stateGroup = stateGroup;
 		
