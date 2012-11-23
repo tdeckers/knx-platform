@@ -1,0 +1,17 @@
+@CHARSET "ISO-8859-1";
+
+.knx-thermostat {
+	
+}
+
+.knx-thermostat-actual { 
+	font-size: 9px;	
+}
+
+.knx-thermostat-setpoint {
+	color: green;
+}
+
+.knx-thermostat-setpoint-heating {
+	color: red;
+}

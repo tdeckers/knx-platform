@@ -24,6 +24,7 @@ import tuwien.auto.calimero.CloseEvent;
 import tuwien.auto.calimero.FrameEvent;
 import tuwien.auto.calimero.GroupAddress;
 import tuwien.auto.calimero.datapoint.Datapoint;
+import tuwien.auto.calimero.datapoint.StateDP;
 import tuwien.auto.calimero.dptxlator.DPT;
 import tuwien.auto.calimero.exception.KNXException;
 import tuwien.auto.calimero.exception.KNXFormatException;
@@ -115,6 +116,26 @@ public class KNXAdapter {
 	 */
 	public void prefetch() {
 		logger.info("Prefetching states from KNX");
+		
+		StringBuffer prefetchList = new StringBuffer();
+		
+		for(String address: listenFor.keySet()) {
+			prefetchList.append(address + " ");
+			try {
+				GroupAddress ga = new GroupAddress(address);
+				DPT dpt = typeMap.get(address);
+				Datapoint dp = new StateDP(ga, "", 0, dpt.getID());
+				pc.read(dp);
+			} catch (KNXException e) {
+				logger.warning("Exception while prefetching " + address + " - " + e.getMessage());
+			}
+		}
+		
+		logger.fine("Prefetch list: " + prefetchList);	
+		
+		
+		/*
+		
 		String[] boolGroups = {"0/1/0", "0/1/1", "0/1/3", "0/1/4", // Alarm status.
 				"2/0/4"};	// heating on/off
 						
@@ -125,6 +146,8 @@ public class KNXAdapter {
 				e.printStackTrace();
 			}
 		}
+		
+		
 		
 		String scalingGroupsPrefix = "2/3/";  // just heating variables for now.
 		for(int i = 0; i <= 13; i++) {
@@ -143,7 +166,14 @@ public class KNXAdapter {
 			} catch (KNXException e) {
 				e.printStackTrace();
 			}
-		}		
+		}	
+		try {
+			// wasplaats and entertain behave differently.
+			pc.readUnsigned(new GroupAddress("2/4/2"), ProcessCommunicator.UNSCALED);
+			pc.readUnsigned(new GroupAddress("2/4/3"), ProcessCommunicator.UNSCALED);
+		} catch (KNXException e) {
+			e.printStackTrace();
+		}
 		
 		String[] floatGroupPrefixes = {"2/1/", //actual temp 
 								"2/2/"}; // setpoint temp
@@ -157,6 +187,7 @@ public class KNXAdapter {
 			}
 			
 		}
+		*/
 		
 		logger.info("Done prefetching states from KNX");		
 		

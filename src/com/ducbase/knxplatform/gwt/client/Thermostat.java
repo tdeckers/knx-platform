@@ -32,6 +32,7 @@ public class Thermostat extends Device implements ClickHandler {
 	private float actualTemp = 0;
 	private float setpointTemp = 0;
 	private int mode = -1;
+	private int variable = -1;
 	
 	public Thermostat() {
 		HorizontalPanel panel = new HorizontalPanel();
@@ -45,7 +46,9 @@ public class Thermostat extends Device implements ClickHandler {
 		VerticalPanel vPanel = new VerticalPanel();
 		vPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		
-		vPanel.add(actualLabel);		
+		actualLabel.setStyleName("knx-thermostat-actual");
+		vPanel.add(actualLabel);
+		setpointLabel.setStyleName("knx-thermostat-setpoint");
 		vPanel.add(setpointLabel);
 		setpointLabel.addClickHandler(this);
 		panel.add(vPanel);
@@ -92,6 +95,16 @@ public class Thermostat extends Device implements ClickHandler {
 		}
 	}
 	
+	public void setVariable(int variable) {
+		this.variable = variable;
+		
+		if (this.variable > 0) {
+			setpointLabel.setStyleDependentName("heating", true);
+		} else {
+			setpointLabel.setStyleDependentName("heating", false);
+		}
+	}
+	
 	public void setSize(String width, String height) {
 		modeImage.setSize(width, height);
 	}
@@ -102,7 +115,7 @@ public class Thermostat extends Device implements ClickHandler {
 		this.setMode(thermo.getMode());
 		this.setSetpointTemp(thermo.getSetpoint());
 		this.setActualTemp(thermo.getActual());
-		// Variable not showing yet.
+		this.setVariable(thermo.getVariable());
 	}
 	
 	static public class ThermostatVO extends JavaScriptObject {
