@@ -14,7 +14,8 @@ public class ConfigDevice {
 	public String gactual;
 	public String gsetpointr;
 	public String gsetpointw;
-	public String gmode;
+	public String gmoder;
+	public String gmodew;
 	
 	public String toString() {
 		return name + "[" + type + "]";

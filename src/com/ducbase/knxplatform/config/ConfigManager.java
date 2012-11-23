@@ -56,7 +56,7 @@ public class ConfigManager {
 				manager.addDevice(sensor);
 			}
 			if ("thermostat".equalsIgnoreCase(device.type)) {
-				KNXThermostat thermostat = new KNXThermostat(device.id, device.name, device.gactual, device.gsetpointr, device.gsetpointw, device.gvariable, device.gmode);
+				KNXThermostat thermostat = new KNXThermostat(device.id, device.name, device.gactual, device.gsetpointr, device.gsetpointw, device.gvariable, device.gmoder, device.gmodew);
 				thermostat.setDescription(device.description);
 				manager.addDevice(thermostat);				
 			}

@@ -87,6 +87,18 @@ public class KNXUI implements EntryPoint {
 		absolutePanel_2.add(switchedLight_24, 314, 180);
 		switchedLight_24.setSize("30px", "30px");
 		
+		Thermostat thermo_wasplaats = new Thermostat();
+		thermo_wasplaats.setId("13");
+		absolutePanel_2.add(thermo_wasplaats, 133, 377);
+		thermo_wasplaats.setSize("30px", "30px");
+		devices.add(thermo_wasplaats);
+		
+		Thermostat thermo_entertain = new Thermostat();
+		thermo_entertain.setId("14");
+		absolutePanel_2.add(thermo_entertain, 340, 278);
+		thermo_entertain.setSize("30px", "30px");
+		devices.add(thermo_entertain);
+		
 		AbsolutePanel absolutePanel = new AbsolutePanel();
 		tabPanel.add(absolutePanel, "Gelijkvloers");
 		absolutePanel.setSize("580px", "707px");
@@ -147,13 +159,11 @@ public class KNXUI implements EntryPoint {
 		absolutePanel.add(image_16, 317, 502);
 		image_16.setSize("30px", "30px");
 		
-		Image image_17 = new Image("img/red_light.png");
-		absolutePanel.add(image_17, 419, 435);
-		image_17.setSize("25px", "25px");
-		
-		Image image_18 = new Image("img/red_light.png");
-		absolutePanel.add(image_18, 343, 331);
-		image_18.setSize("25px", "25px");
+		Thermostat thermo_living = new Thermostat();
+		absolutePanel.add(thermo_living, 343, 320);
+		thermo_living.setSize("30px", "30px");
+		thermo_living.setId("5");
+		devices.add(thermo_living);
 		
 		DimmedLight dimmedLight = new DimmedLight();
 		absolutePanel.add(dimmedLight, 391, 216);
@@ -179,6 +189,12 @@ public class KNXUI implements EntryPoint {
 		livingFloor.setId("4");
 		devices.add(livingFloor);
 		
+		Thermostat thermo_marlies = new Thermostat();
+		thermo_marlies.setId("7");
+		absolutePanel.add(thermo_marlies, 419, 482);
+		thermo_marlies.setSize("30px", "30px");
+		devices.add(thermo_marlies);
+		
 		AbsolutePanel absolutePanel_1 = new AbsolutePanel();
 		tabPanel.add(absolutePanel_1, "Boven", false);
 		absolutePanel_1.setSize("580px", "707px");
@@ -191,13 +207,11 @@ public class KNXUI implements EntryPoint {
 		absolutePanel_1.add(dimmedLight_2, 204, 300);
 		dimmedLight_2.setSize("30px", "30px");
 		
-		Image image_27 = new Image("img/red_light.png");
-		absolutePanel_1.add(image_27, 358, 265);
-		image_27.setSize("25px", "25px");
-		
-		Image image_28 = new Image("img/red_light.png");
-		absolutePanel_1.add(image_28, 162, 245);
-		image_28.setSize("25px", "25px");
+		Thermostat thermo_tom = new Thermostat();
+		absolutePanel_1.add(thermo_tom, 127, 239);
+		thermo_tom.setSize("30px", "30px");
+		thermo_tom.setId("6");
+		devices.add(thermo_tom);
 		
 		DimmedLight dimmedLight_3 = new DimmedLight();
 		absolutePanel_1.add(dimmedLight_3, 439, 311);
@@ -254,6 +268,36 @@ public class KNXUI implements EntryPoint {
 		SwitchedLight switchedLight_15 = new SwitchedLight();
 		absolutePanel_1.add(switchedLight_15, 90, 496);
 		switchedLight_15.setSize("30px", "30px");
+		
+		Thermostat thermo_master = new Thermostat();
+		thermo_master.setId("8");
+		absolutePanel_1.add(thermo_master, 358, 256);
+		thermo_master.setSize("30px", "30px");
+		devices.add(thermo_master);
+		
+		Thermostat thermo_bad = new Thermostat();
+		thermo_bad.setId("12");
+		absolutePanel_1.add(thermo_bad, 501, 395);
+		thermo_bad.setSize("30px", "30px");
+		devices.add(thermo_bad);
+		
+		Thermostat thermo_kamer2 = new Thermostat();
+		thermo_kamer2.setId("10");
+		absolutePanel_1.add(thermo_kamer2, 90, 395);
+		thermo_kamer2.setSize("30px", "30px");
+		devices.add(thermo_kamer2);
+		
+		Thermostat thermo_kamer1 = new Thermostat();
+		thermo_kamer1.setId("9");
+		absolutePanel_1.add(thermo_kamer1, 163, 565);
+		thermo_kamer1.setSize("30px", "30px");
+		devices.add(thermo_kamer1);
+		
+		Thermostat thermo_douche = new Thermostat();
+		thermo_douche.setId("11");
+		absolutePanel_1.add(thermo_douche, 115, 469);
+		thermo_douche.setSize("30px", "30px");
+		devices.add(thermo_douche);
 		
 		AbsolutePanel absolutePanel_3 = new AbsolutePanel();
 		tabPanel.add(absolutePanel_3, "Zolder", false);

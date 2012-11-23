@@ -136,7 +136,7 @@ public class KNXAdapter {
 			}
 		}
 		
-		String scalingGroupsPrefix2 = "2/4/";  // just mode variables for now.
+		String scalingGroupsPrefix2 = "2/5/";  // just mode variables for now.
 		for(int i = 0; i <= 9; i++) {
 			try {
 				pc.readUnsigned(new GroupAddress(scalingGroupsPrefix2 + i), ProcessCommunicator.UNSCALED);

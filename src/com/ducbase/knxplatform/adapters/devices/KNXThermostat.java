@@ -35,30 +35,37 @@ public class KNXThermostat extends Thermostat implements KNXDevice {
 	private String variableGroup;
 	private DPT variableGroupType = DPTXlator8BitUnsigned.DPT_SCALING;
 	
-	private String modeGroup;
+	private String modeReadGroup;
 	// TODO: this is actually not correct.
 	// Should be DPT 20.102 instead.
-	private DPT modeGroupType = DPTXlator8BitUnsigned.DPT_DECIMALFACTOR; 
+	private DPT modeReadGroupType = DPTXlator8BitUnsigned.DPT_DECIMALFACTOR; 
 
+	private String modeWriteGroup;
+	// TODO: this is actually not correct.
+	// Should be DPT 20.102 instead.
+	private DPT modeWriteGroupType = DPTXlator8BitUnsigned.DPT_DECIMALFACTOR; 
+
+	
 	public KNXThermostat() {
 		
 	}
 	
-	public KNXThermostat(String id, String name, String actualGroup, String setPointReadGroup, String setPointWriteGroup, String variableGroup, String modeGroup) {
+	public KNXThermostat(String id, String name, String actualGroup, String setPointReadGroup, String setPointWriteGroup, String variableGroup, String modeReadGroup, String modeWriteGroup) {
 		this.setId(id);
 		this.setName(name);
 		this.actualGroup = actualGroup;
 		this.setPointReadGroup = setPointReadGroup;
 		this.setPointWriteGroup = setPointWriteGroup;
 		this.variableGroup = variableGroup;
-		this.modeGroup = modeGroup;
+		this.modeReadGroup = modeReadGroup;
+		this.modeWriteGroup = modeWriteGroup;
 		
 		this.adapter = KNXAdapter.getInstance();		
 	}
 	
 	@Override
 	public String[] getListenGroups() {
-		return new String[] { this.actualGroup, this.setPointReadGroup, this.variableGroup, this.modeGroup };
+		return new String[] { this.actualGroup, this.setPointReadGroup, this.variableGroup, this.modeReadGroup };
 	}
 
 	@Override
@@ -68,7 +75,8 @@ public class KNXThermostat extends Thermostat implements KNXDevice {
 		map.put(this.setPointReadGroup, this.setPointReadGroupType);
 		map.put(this.setPointWriteGroup, this.setPointWriteGroupType);
 		map.put(this.variableGroup, this.variableGroupType);
-		map.put(this.modeGroup, this.modeGroupType);
+		map.put(this.modeReadGroup, this.modeReadGroupType);
+		map.put(this.modeWriteGroup, this.modeWriteGroupType);
 		return map;
 	}
 
@@ -92,13 +100,13 @@ public class KNXThermostat extends Thermostat implements KNXDevice {
 
 	@Override
 	public void setMode(Integer mode) {
-		adapter.sendIntUnscaled(modeGroup, mode);
+		adapter.sendIntUnscaled(modeWriteGroup, mode);
 	}
 
 	@XmlElement
 	@Override
 	public Integer getMode() {
-		String modeString = adapter.getValueForGroupAddress(modeGroup);
+		String modeString = adapter.getValueForGroupAddress(modeReadGroup);
 		int mode = -1;
 		try {
 			mode = Integer.parseInt(modeString);

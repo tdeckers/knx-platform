@@ -36,7 +36,7 @@ public class DimmedLight extends Composite implements ClickHandler, DoubleClickH
 		
 		light.addClickHandler(this);
 		//light.addTouchMoveHandler(this);
-		label.setText(dimValue + " %");		
+		this.setDimValue(0);		
 		
 		initWidget(panel);
 		
