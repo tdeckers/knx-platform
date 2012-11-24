@@ -12,6 +12,14 @@ public class MessageToast extends PopupPanel {
 	public MessageToast(String message) {
 		super(true);		
 		setWidget(new Label(message));		
+		setStyleName("knx-messagetoast");
+	}
+	
+	public MessageToast(String message, boolean alert) {
+		this(message);
+		if (alert) {
+			addStyleName("knx-messagetoast-alert");
+		}
 	}
 	
 	@Override
@@ -32,5 +40,10 @@ public class MessageToast extends PopupPanel {
 		final MessageToast toast = new MessageToast(message);
 		toast.show();
 	}
-		
+	
+	public static void alert(String message) {
+		final MessageToast toast = new MessageToast(message, true);
+		toast.show();
+	}
+	
 }

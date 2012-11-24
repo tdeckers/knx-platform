@@ -5,13 +5,39 @@
 }
 
 .knx-thermostat-actual { 
-	font-size: 9px;	
+		color: green;
+}
+
+.knx-thermostat-actual-heating { 
+		color: red;
 }
 
 .knx-thermostat-setpoint {
-	color: green;
+	font-size: 9px;
 }
 
-.knx-thermostat-setpoint-heating {
-	color: red;
+.knx-messagetoast {
+  border: 2px solid #191919;
+  padding: 3px;
+  background: #F0F0F0;
+}
+
+.knx-messagetoast-alert {
+  border: 2px solid #a50000;
+}
+
+.knx-thermostat-popup {
+  border: 2px solid #191919;
+  padding: 3px;
+  background: #F0F0F0;
+}
+  
+.knx-dimmedlight-popup {
+  border: 2px solid #191919;
+  padding: 3px;
+  background: #F0F0F0;
+}
+
+.knx-dimmedlight-popup-label {
+	padding: 3px;
 }

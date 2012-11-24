@@ -80,8 +80,7 @@ public class SwitchedLight extends Device implements ClickHandler {
 		  
 		// JSNI methods to get stock data.
 		  public final native boolean isOn() /*-{ return this.on == "true"; }-*/; 	
-		  
-
+	  
 	}
 
 }

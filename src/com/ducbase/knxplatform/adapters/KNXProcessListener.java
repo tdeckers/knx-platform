@@ -55,40 +55,11 @@ public class KNXProcessListener implements ProcessListener {
 		}
 		// End new processing logic !!
 		
+		
+		
+		
 		try {
 			logger.fine(src + " -> " + dst + ": " + asdu.length);
-			// Alarm status
-			if (dst.startsWith("0/1/")) {
-				this.writeBoolean(dst, asdu);
-			}
-			// Lights dimming value
-			if (dst.startsWith("1/3/")) {
-				this.writePercentage(dst, asdu);
-			}
-			// Status lights
-			if (dst.startsWith("1/4/")) {
-				this.writeBoolean(dst, asdu);
-			}
-			// Heating on/off
-			if (dst.equals("2/0/4")) {
-				this.writeBoolean(dst, asdu);			
-			}
-			// Actual temperature (rooms + outside + floor)
-			if (dst.startsWith("2/1/") || dst.startsWith("2/6/")) {
-				this.writeTemperature(dst, asdu);
-			}
-			// Setpoint temperature
-			if (dst.startsWith("2/2/")) {
-				this.writeTemperature(dst, asdu);
-			}
-			// Heating variable
-			if(dst.startsWith("2/3/")) {
-				this.writePercentage(dst, asdu);
-			}
-			// Operating mode
-			if (dst.startsWith("2/4/")) {
-				// TODO: not implemented
-			}
 			// Shutter position
 			if (dst.startsWith("3/3/")) {
 				this.writePercentage(dst, asdu);

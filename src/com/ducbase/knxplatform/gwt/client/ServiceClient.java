@@ -85,7 +85,7 @@ public class ServiceClient {
 					if (200 == response.getStatusCode() || 204 == response.getStatusCode()) {
 						//
 					} else {
-						MessageToast.message("Status code: " + response.getStatusCode());
+						MessageToast.alert("Status code: " + response.getStatusCode());
 						//label.setText("" + response.getStatusCode());
 			        }
 					
@@ -93,7 +93,7 @@ public class ServiceClient {
 
 				@Override
 				public void onError(Request request, Throwable exception) {
-					MessageToast.message("Error: " + exception.getMessage());
+					MessageToast.alert("Error: " + exception.getMessage());
 //					/label.setText(exception.getMessage());
 					
 				}});

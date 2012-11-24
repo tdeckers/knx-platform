@@ -12,6 +12,8 @@ import javax.xml.bind.Unmarshaller;
 import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
 
 import com.ducbase.knxplatform.adapters.KNXAdapter;
+import com.ducbase.knxplatform.adapters.devices.KNXBooleanStatus;
+import com.ducbase.knxplatform.adapters.devices.KNXDimmedLight;
 import com.ducbase.knxplatform.adapters.devices.KNXSwitchedLight;
 import com.ducbase.knxplatform.adapters.devices.KNXTemperatureSensor;
 import com.ducbase.knxplatform.adapters.devices.KNXThermostat;
@@ -50,6 +52,11 @@ public class ConfigManager {
 				light.setDescription(device.description);
 				manager.addDevice(light);
 			}
+			if ("dimmedlight".equalsIgnoreCase(device.type)) {
+				KNXDimmedLight light = new KNXDimmedLight(device.id, device.name, device.gstatus, device.gswitch, device.gdimr, device.gdimw);
+				light.setDescription(device.description);
+				manager.addDevice(light);
+			}			
 			if ("tempSensor".equalsIgnoreCase(device.type)) {
 				KNXTemperatureSensor sensor = new KNXTemperatureSensor(device.id, device.name, device.gactual);
 				sensor.setDescription(device.description);
@@ -59,6 +66,11 @@ public class ConfigManager {
 				KNXThermostat thermostat = new KNXThermostat(device.id, device.name, device.gactual, device.gsetpointr, device.gsetpointw, device.gvariable, device.gmoder, device.gmodew);
 				thermostat.setDescription(device.description);
 				manager.addDevice(thermostat);				
+			}
+			if ("booleanstatus".equalsIgnoreCase(device.type)) {
+				KNXBooleanStatus status = new KNXBooleanStatus(device.id, device.name, device.gstatus);
+				status.setDescription(device.description);
+				manager.addDevice(status);
 			}
 		}
 	

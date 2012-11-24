@@ -1,13 +1,21 @@
 package com.ducbase.knxplatform.gwt.client;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.codehaus.jackson.map.module.SimpleAbstractTypeResolver;
 
 import com.ducbase.knxplatform.gwt.client.ws.MessageEvent;
 import com.ducbase.knxplatform.gwt.client.ws.MessageHandler;
 import com.ducbase.knxplatform.gwt.client.ws.WebSocket;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.dom.client.Style.Position;
@@ -25,7 +33,8 @@ public class KNXUI implements EntryPoint {
 
 	private Resources resources = GWT.create(Resources.class);
 	private String baseUrl;
-	private List<Device> devices = new ArrayList<Device>();
+	private Map<String, Device> devices = new HashMap<String, Device>();
+	
 	
 	@Override
 	public void onModuleLoad() {
@@ -59,25 +68,25 @@ public class KNXUI implements EntryPoint {
 		slWasplaats.setId("L0.6");
 		absolutePanel_2.add(slWasplaats, 133, 333);
 		slWasplaats.setSize("30px", "30px");
-		devices.add(slWasplaats);
+		devices.put(slWasplaats.getId(), slWasplaats);
 		
 		SwitchedLight slTech = new SwitchedLight();
 		slTech.setId("L0.8");
 		absolutePanel_2.add(slTech, 87, 435);
 		slTech.setSize("30px", "30px");
-		devices.add(slTech);
+		devices.put(slTech.getId(), slTech);
 		
 		SwitchedLight slKelderGarage = new SwitchedLight();
 		slKelderGarage.setId("L0.7");
 		absolutePanel_2.add(slKelderGarage, 116, 570);
 		slKelderGarage.setSize("30px", "30px");
-		devices.add(slKelderGarage);
+		devices.put(slKelderGarage.getId(), slKelderGarage);
 		
 		SwitchedLight slKelderInkom = new SwitchedLight();
 		slKelderInkom.setId("L0.5");
 		absolutePanel_2.add(slKelderInkom, 314, 417);
 		slKelderInkom.setSize("30px", "30px");
-		devices.add(slKelderInkom);
+		devices.put(slKelderInkom.getId(), slKelderInkom);
 		
 		SwitchedLight switchedLight_22 = new SwitchedLight();
 		absolutePanel_2.add(switchedLight_22, 485, 435);
@@ -87,25 +96,25 @@ public class KNXUI implements EntryPoint {
 		slPokerroom.setId("L0.3");
 		absolutePanel_2.add(slPokerroom, 485, 180);
 		slPokerroom.setSize("30px", "30px");
-		devices.add(slPokerroom);
+		devices.put(slPokerroom.getId(), slPokerroom);
 		
 		SwitchedLight slEntertain = new SwitchedLight();
 		slEntertain.setId("L0.2");
 		absolutePanel_2.add(slEntertain, 314, 180);
 		slEntertain.setSize("30px", "30px");
-		devices.add(slEntertain);
+		devices.put(slEntertain.getId(), slEntertain);
 		
 		Thermostat thermo_wasplaats = new Thermostat();
 		thermo_wasplaats.setId("13");
 		absolutePanel_2.add(thermo_wasplaats, 116, 380);
 		thermo_wasplaats.setSize("30px", "30px");
-		devices.add(thermo_wasplaats);
+		devices.put(thermo_wasplaats.getId(), thermo_wasplaats);
 		
 		Thermostat thermo_entertain = new Thermostat();
 		thermo_entertain.setId("14");
 		absolutePanel_2.add(thermo_entertain, 329, 272);
 		thermo_entertain.setSize("30px", "30px");
-		devices.add(thermo_entertain);
+		devices.put(thermo_entertain.getId(), thermo_entertain);
 		
 		AbsolutePanel absolutePanel = new AbsolutePanel();
 		tabPanel.add(absolutePanel, "Gelijkvloers");
@@ -115,9 +124,11 @@ public class KNXUI implements EntryPoint {
 		absolutePanel.add(background, 0, 0);
 		background.setSize("580px", "");
 		
-		DimmedLight dimmedLight1 = new DimmedLight();
-		absolutePanel.add(dimmedLight1, 419, 93);
-		dimmedLight1.setSize("30px", "30px");
+		DimmedLight dlLivingTafel = new DimmedLight();
+		dlLivingTafel.setId("L1.2");
+		absolutePanel.add(dlLivingTafel, 419, 93);
+		dlLivingTafel.setSize("30px", "30px");
+		devices.put(dlLivingTafel.getId(), dlLivingTafel);
 		
 		Image image_14 = new Image("img/light_bulb_off.png");
 		absolutePanel.add(image_14, 329, 440);
@@ -135,93 +146,97 @@ public class KNXUI implements EntryPoint {
 		absolutePanel.add(thermo_living, 343, 320);
 		thermo_living.setSize("30px", "30px");
 		thermo_living.setId("5");
-		devices.add(thermo_living);
+		devices.put(thermo_living.getId(), thermo_living);
 		
-		DimmedLight dimmedLight = new DimmedLight();
-		absolutePanel.add(dimmedLight, 391, 216);
-		dimmedLight.setSize("30px", "30px");
+		DimmedLight dlLivingSalon = new DimmedLight();
+		dlLivingSalon.setId("L1.3");
+		absolutePanel.add(dlLivingSalon, 391, 216);
+		dlLivingSalon.setSize("30px", "30px");
+		devices.put(dlLivingSalon.getId(), dlLivingSalon);
 		
 		SwitchedLight slTerras = new SwitchedLight();
 		slTerras.setId("L1.6");
 		absolutePanel.add(slTerras, 125, 47);
 		slTerras.setSize("30px", "30px");
-		devices.add(slTerras);
+		devices.put(slTerras.getId(), slTerras);
 		
-		DimmedLight dimmedLight_1 = new DimmedLight();
-		absolutePanel.add(dimmedLight_1, 381, 10);
-		dimmedLight_1.setSize("30px", "30px");
+		DimmedLight dlLivingRamen = new DimmedLight();
+		dlLivingRamen.setId("L1.1");
+		absolutePanel.add(dlLivingRamen, 381, 10);
+		dlLivingRamen.setSize("30px", "30px");
+		devices.put(dlLivingRamen.getId(), dlLivingRamen);
 		
 		TemperatureSensor outsideTemp = new TemperatureSensor();
 		absolutePanel.add(outsideTemp, 21, 10);
 		//switchedLight_28.setSize("30px", "30px");
 		outsideTemp.setId("3");
-		devices.add(outsideTemp);
+		devices.put(outsideTemp.getId(), outsideTemp);
 		
 		TemperatureSensor livingFloor = new TemperatureSensor();
 		absolutePanel.add(livingFloor, 373, 278);
 		//temperatureSensor.setSize("36px", "18px");
 		livingFloor.setId("4");
-		devices.add(livingFloor);
+		devices.put(livingFloor.getId(), livingFloor);
 		
 		Thermostat thermo_marlies = new Thermostat();
 		thermo_marlies.setId("7");
 		absolutePanel.add(thermo_marlies, 419, 482);
 		thermo_marlies.setSize("30px", "30px");
-		devices.add(thermo_marlies);
+		devices.put(thermo_marlies.getId(), thermo_marlies);
 		
 		SwitchedLight slBureauMarlies = new SwitchedLight();
 		slBureauMarlies.setId("L1.5");
 		absolutePanel.add(slBureauMarlies, 485, 431);
 		slBureauMarlies.setSize("30px", "30px");
-		devices.add(slBureauMarlies);
+		devices.put(slBureauMarlies.getId(), slBureauMarlies);
 		
 		SwitchedLight slGarage = new SwitchedLight();
 		slGarage.setId("L1.7");
 		absolutePanel.add(slGarage, 111, 574);
 		slGarage.setSize("30px", "30px");
-		devices.add(slGarage);
+		devices.put(slGarage.getId(), slGarage);
 		
 		SwitchedLight slToiletGV = new SwitchedLight();
 		slToiletGV.setId("L1.8");
 		absolutePanel.add(slToiletGV, 372, 456);
 		slToiletGV.setSize("30px", "30px");
-		devices.add(slToiletGV);
+		devices.put(slToiletGV.getId(), slToiletGV);
 		
 		SwitchedLight slKeukenBerging = new SwitchedLight();
 		slKeukenBerging.setId("L1.10");
 		absolutePanel.add(slKeukenBerging, 90, 431);
 		slKeukenBerging.setSize("30px", "30px");
-		devices.add(slKeukenBerging);
+		devices.put(slKeukenBerging.getId(), slKeukenBerging);
 		
 		SwitchedLight slVoordeur = new SwitchedLight();
 		slVoordeur.setId("L1.13");
 		absolutePanel.add(slVoordeur, 316, 502);
 		slVoordeur.setSize("30px", "30px");
-		devices.add(slVoordeur);
+		devices.put(slVoordeur.getId(), slVoordeur);
 		
 		SwitchedLight slKeukenRamen = new SwitchedLight();
 		slKeukenRamen.setId("L1.14");
 		absolutePanel.add(slKeukenRamen, 130, 131);
 		slKeukenRamen.setSize("30px", "30px");
-		devices.add(slKeukenRamen);
+		devices.put(slKeukenRamen.getId(), slKeukenRamen);
 		
 		SwitchedLight slKeukenTafel = new SwitchedLight();
 		slKeukenTafel.setId("L1.15");
 		absolutePanel.add(slKeukenTafel, 128, 220);
 		slKeukenTafel.setSize("30px", "30px");
-		devices.add(slKeukenTafel);
+		devices.put(slKeukenTafel.getId(), slKeukenTafel);
 		
 		SwitchedLight slDampkap = new SwitchedLight();
 		slDampkap.setId("L1.16");
 		absolutePanel.add(slDampkap, 129, 339);
 		slDampkap.setSize("30px", "30px");
-		devices.add(slDampkap);
+		devices.put(slDampkap.getId(), slDampkap);
 		
 		SwitchedLight slWasbak = new SwitchedLight();
 		slWasbak.setId("L1.17");
 		absolutePanel.add(slWasbak, 53, 339);
 		slWasbak.setSize("30px", "30px");
-		devices.add(slWasbak);
+		devices.put(slWasbak.getId(), slWasbak);
 		
 		AbsolutePanel absolutePanel_1 = new AbsolutePanel();
 		tabPanel.add(absolutePanel_1, "Boven", false);
@@ -231,15 +246,16 @@ public class KNXUI implements EntryPoint {
 		absolutePanel_1.add(image, 0, 0);
 		image.setSize("580px", "");
 		
-		DimmedLight dimmedLight_2 = new DimmedLight();
-		absolutePanel_1.add(dimmedLight_2, 204, 300);
-		dimmedLight_2.setSize("30px", "30px");
+		DimmedLight dlOverloop = new DimmedLight();
+		dlOverloop.setId("L2.3");
+		absolutePanel_1.add(dlOverloop, 204, 300);
+		dlOverloop.setSize("30px", "30px");
 		
 		Thermostat thermo_tom = new Thermostat();
 		absolutePanel_1.add(thermo_tom, 116, 237);
 		thermo_tom.setSize("30px", "30px");
 		thermo_tom.setId("6");
-		devices.add(thermo_tom);
+		devices.put(thermo_tom.getId(), thermo_tom);
 		
 		DimmedLight dimmedLight_3 = new DimmedLight();
 		absolutePanel_1.add(dimmedLight_3, 439, 311);
@@ -249,109 +265,109 @@ public class KNXUI implements EntryPoint {
 		absolutePanel_1.add(slBureauTom, 101, 188);
 		slBureauTom.setSize("30px", "30px");
 		slBureauTom.setId("L2.1");
-		devices.add(slBureauTom);
+		devices.put(slBureauTom.getId(), slBureauTom);
 		
 		SwitchedLight slMasterCentraal = new SwitchedLight();
 		slMasterCentraal.setId("L2.8");
 		absolutePanel_1.add(slMasterCentraal, 446, 199);
 		slMasterCentraal.setSize("30px", "30px");
-		devices.add(slMasterCentraal);
+		devices.put(slMasterCentraal.getId(), slMasterCentraal);
 		
 		SwitchedLight slBureauTomVoor = new SwitchedLight();
 		slBureauTomVoor.setId("L2.2");
 		absolutePanel_1.add(slBureauTomVoor, 209, 151);
 		slBureauTomVoor.setSize("30px", "30px");
-		devices.add(slBureauTomVoor);
+		devices.put(slBureauTomVoor.getId(), slBureauTomVoor);
 		
 		SwitchedLight slToiletVerdiep = new SwitchedLight();
 		slToiletVerdiep.setId("L2.12");
 		absolutePanel_1.add(slToiletVerdiep, 312, 245);
 		slToiletVerdiep.setSize("30px", "30px");
-		devices.add(slToiletVerdiep);
+		devices.put(slToiletVerdiep.getId(), slToiletVerdiep);
 		
 		SwitchedLight slZolderTrap = new SwitchedLight();
 		slZolderTrap.setId("L3.1");
 		absolutePanel_1.add(slZolderTrap, 264, 214);
 		slZolderTrap.setSize("30px", "30px");
-		devices.add(slZolderTrap);
+		devices.put(slZolderTrap.getId(), slZolderTrap);
 		
 		SwitchedLight slDressing = new SwitchedLight();
 		slDressing.setId("L2.5");
 		absolutePanel_1.add(slDressing, 380, 401);
 		slDressing.setSize("30px", "30px");
-		devices.add(slDressing);
+		devices.put(slDressing.getId(), slDressing);
 		
 		SwitchedLight slBadWaskommen = new SwitchedLight();
 		slBadWaskommen.setId("L2.7");
 		absolutePanel_1.add(slBadWaskommen, 448, 400);
 		slBadWaskommen.setSize("30px", "30px");
-		devices.add(slBadWaskommen);
+		devices.put(slBadWaskommen.getId(), slBadWaskommen);
 		
 		SwitchedLight slBadCentraal = new SwitchedLight();
 		slBadCentraal.setId("L2.6");
 		absolutePanel_1.add(slBadCentraal, 501, 440);
 		slBadCentraal.setSize("30px", "30px");
-		devices.add(slBadCentraal);
+		devices.put(slBadCentraal.getId(), slBadCentraal);
 		
 		SwitchedLight slKamer2 = new SwitchedLight();
 		slKamer2.setId("L2.10");
 		absolutePanel_1.add(slKamer2, 101, 347);
 		slKamer2.setSize("30px", "30px");
-		devices.add(slKamer2);
+		devices.put(slKamer2.getId(), slKamer2);
 		
 		SwitchedLight slKamer1 = new SwitchedLight();
 		slKamer1.setId("L2.13");
 		absolutePanel_1.add(slKamer1, 116, 605);
 		slKamer1.setSize("30px", "30px");
-		devices.add(slKamer1);
+		devices.put(slKamer1.getId(), slKamer1);
 		
 		SwitchedLight slDoucheWaskommen = new SwitchedLight();
 		slDoucheWaskommen.setId("L2.11");
 		absolutePanel_1.add(slDoucheWaskommen, 90, 445);
 		slDoucheWaskommen.setSize("30px", "30px");
-		devices.add(slDoucheWaskommen);
+		devices.put(slDoucheWaskommen.getId(), slDoucheWaskommen);
 		
 		SwitchedLight slDoucheCentraal = new SwitchedLight();
 		slDoucheCentraal.setId("L2.14");
 		absolutePanel_1.add(slDoucheCentraal, 71, 502);
 		slDoucheCentraal.setSize("30px", "30px");
-		devices.add(slDoucheCentraal);
+		devices.put(slDoucheCentraal.getId(), slDoucheCentraal);
 		
 		Thermostat thermo_master = new Thermostat();
 		thermo_master.setId("8");
 		absolutePanel_1.add(thermo_master, 358, 256);
 		thermo_master.setSize("30px", "30px");
-		devices.add(thermo_master);
+		devices.put(thermo_master.getId(), thermo_master);
 		
 		Thermostat thermo_bad = new Thermostat();
 		thermo_bad.setId("12");
 		absolutePanel_1.add(thermo_bad, 491, 395);
 		thermo_bad.setSize("30px", "30px");
-		devices.add(thermo_bad);
+		devices.put(thermo_bad.getId(), thermo_bad);
 		
 		Thermostat thermo_kamer2 = new Thermostat();
 		thermo_kamer2.setId("10");
 		absolutePanel_1.add(thermo_kamer2, 81, 395);
 		thermo_kamer2.setSize("30px", "30px");
-		devices.add(thermo_kamer2);
+		devices.put(thermo_kamer2.getId(), thermo_kamer2);
 		
 		Thermostat thermo_kamer1 = new Thermostat();
 		thermo_kamer1.setId("9");
 		absolutePanel_1.add(thermo_kamer1, 163, 565);
 		thermo_kamer1.setSize("30px", "30px");
-		devices.add(thermo_kamer1);
+		devices.put(thermo_kamer1.getId(), thermo_kamer1);
 		
 		Thermostat thermo_douche = new Thermostat();
 		thermo_douche.setId("11");
 		absolutePanel_1.add(thermo_douche, 109, 471);
 		thermo_douche.setSize("30px", "30px");
-		devices.add(thermo_douche);
+		devices.put(thermo_douche.getId(), thermo_douche);
 		
 		SwitchedLight slOverloopCentraal = new SwitchedLight();
 		slOverloopCentraal.setId("L2.4");
 		absolutePanel_1.add(slOverloopCentraal, 286, 386);
 		slOverloopCentraal.setSize("30px", "30px");
-		devices.add(slOverloopCentraal);
+		devices.put(slOverloopCentraal.getId(), slOverloopCentraal);
 		
 		AbsolutePanel absolutePanel_3 = new AbsolutePanel();
 		tabPanel.add(absolutePanel_3, "Zolder", false);
@@ -365,19 +381,19 @@ public class KNXUI implements EntryPoint {
 		slZolderTrap2.setId("L3.1");
 		absolutePanel_3.add(slZolderTrap2, 284, 215);
 		slZolderTrap2.setSize("30px", "30px");
-		devices.add(slZolderTrap2);
+		devices.put(slZolderTrap2.getId(), slZolderTrap2);
 		
 		SwitchedLight slZolderCentraal = new SwitchedLight();
 		slZolderCentraal.setId("L3.2");
 		absolutePanel_3.add(slZolderCentraal, 469, 302);
 		slZolderCentraal.setSize("30px", "30px");
-		devices.add(slZolderCentraal);
+		devices.put(slZolderCentraal.getId(), slZolderCentraal);
 		
 		SwitchedLight slZolderCentraal2 = new SwitchedLight();
 		slZolderCentraal2.setId("L3.2");
 		absolutePanel_3.add(slZolderCentraal2, 112, 419);
 		slZolderCentraal2.setSize("30px", "30px");
-		devices.add(slZolderCentraal2);
+		devices.put(slZolderCentraal2.getId(), slZolderCentraal2);
 		
 		AbsolutePanel absolutePanel_4 = new AbsolutePanel();
 		tabPanel.add(absolutePanel_4, "Garage", false);
@@ -391,25 +407,25 @@ public class KNXUI implements EntryPoint {
 		slWerkplaats.setId("Lg.1");
 		absolutePanel_4.add(slWerkplaats, 83, 318);
 		slWerkplaats.setSize("30px", "30px");
-		devices.add(slWerkplaats);
+		devices.put(slWerkplaats.getId(), slWerkplaats);
 		
 		SwitchedLight slTuingarage = new SwitchedLight();
 		slTuingarage.setId("Lg.2");
 		absolutePanel_4.add(slTuingarage, 237, 318);
 		slTuingarage.setSize("30px", "30px");
-		devices.add(slTuingarage);
+		devices.put(slTuingarage.getId(), slTuingarage);
 		
 		SwitchedLight slToiletTuin = new SwitchedLight();
 		slToiletTuin.setId("Lg.3");
 		absolutePanel_4.add(slToiletTuin, 155, 500);
 		slToiletTuin.setSize("30px", "30px");
-		devices.add(slToiletTuin);
+		devices.put(slToiletTuin.getId(), slToiletTuin);
 		
 		SwitchedLight slTuinBuiten = new SwitchedLight();
 		slTuinBuiten.setId("Lg.4");
 		absolutePanel_4.add(slTuinBuiten, 62, 462);
 		slTuinBuiten.setSize("30px", "30px");
-		devices.add(slTuinBuiten);
+		devices.put(slTuinBuiten.getId(), slTuinBuiten);
 		
 		AbsolutePanel absolutePanel_5 = new AbsolutePanel();
 		tabPanel.add(absolutePanel_5, "Technical", false);
@@ -418,10 +434,46 @@ public class KNXUI implements EntryPoint {
 		Label lblMessage = new Label("Message:");
 		absolutePanel_5.add(lblMessage, 10, 10);
 		
-		final Label label = new Label("...");
-		absolutePanel_5.add(label, 73, 10);
+		final Label msgLabel = new Label("...");
+		absolutePanel_5.add(msgLabel, 73, 10);
 		
-		tabPanel.selectTab(0);
+		BooleanStatus blHeating = new BooleanStatus();
+		blHeating.setId("B1");
+		absolutePanel_5.add(blHeating, 153, 101);
+		blHeating.setSize("46px", "18px");
+		devices.put(blHeating.getId(), blHeating);
+		
+		Label lblNewLabel = new Label("Heating:");
+		absolutePanel_5.add(lblNewLabel, 11, 101);
+		lblNewLabel.setSize("123px", "18px");
+		
+		Label lblAlarmvolledig = new Label("Alarm (volledig):");
+		absolutePanel_5.add(lblAlarmvolledig, 10, 125);
+		lblAlarmvolledig.setSize("123px", "18px");
+		
+		Label lblAlarmgedeeltelijk = new Label("Alarm (gedeeltelijk):");
+		absolutePanel_5.add(lblAlarmgedeeltelijk, 10, 149);
+		lblAlarmgedeeltelijk.setSize("123px", "18px");
+		
+		BooleanStatus blAlarmVoll = new BooleanStatus();
+		blAlarmVoll.setId("B2");
+		absolutePanel_5.add(blAlarmVoll, 153, 125);
+		blAlarmVoll.setSize("46px", "18px");
+		devices.put(blAlarmVoll.getId(), blAlarmVoll);
+		
+		BooleanStatus blAlarmGed = new BooleanStatus();
+		blAlarmGed.setId("B3");
+		absolutePanel_5.add(blAlarmGed, 153, 149);
+		blAlarmGed.setSize("46px", "18px");
+		devices.put(blAlarmGed.getId(), blAlarmGed);
+		
+		Label lblWebsocketStatus = new Label("WebSocket status:");
+		absolutePanel_5.add(lblWebsocketStatus, 11, 34);
+		
+		final Label wsStatusLabel = new Label("...");
+		absolutePanel_5.add(wsStatusLabel, 143, 34);
+		
+		tabPanel.selectTab(1); // set ground floor as default.
 
 	
 		StringBuffer wsUrl = new StringBuffer(baseUrl); 
@@ -435,34 +487,62 @@ public class KNXUI implements EntryPoint {
 				.buildString();
 		
 		WebSocket socket = WebSocket.create(url);
-		socket.setOnMessage(new MessageHandler(){
+		MessageHandler handler = new MessageHandler(){
 			@Override
-			public void onOpen(WebSocket socket) {}
+			public void onOpen(WebSocket socket) {
+				wsStatusLabel.setText("Opened.");
+			}
 
 			@Override
-			public void onClose(WebSocket socket) {}
+			public void onClose(WebSocket socket) {
+				wsStatusLabel.setText("Closed.");
+			}
 
 			@Override
-			public void onError(WebSocket socket) {}
+			public void onError(WebSocket socket) {
+				wsStatusLabel.setText("Error.");
+			}
 
 			@Override
 			public void onMessage(WebSocket socket, MessageEvent event) {
-				//label.setText(event.getData());
+				String data = event.getData();
+				try {
+					DeviceVO jso = JsonUtils.safeEval(data);
+					String id = jso.getId();
+					Device device = devices.get(id);
+					device.update(data);
+					msgLabel.setText(new Date() + " - Updated device " + id);
+				} catch (Exception e) {
+					msgLabel.setText("WS EXCEPTION: " + e.getMessage());
+				}				
 			}
-		});
-
-		final ServiceClient client = new ServiceClient();
+		};
 		
+		socket.setOnMessage(handler);
+		socket.setOnClose(handler);
+		socket.setOnError(handler);
+		socket.setOnOpen(handler);
+
+
+		
+		// Update all devices to initialize values.
+		final ServiceClient client = new ServiceClient();
+		for (Device device: devices.values()) {
+			client.updateDevice(device, msgLabel);
+		}
+
+		// And now do this every so many minutes, in case WebSockets update
+		// misses one.
 		Scheduler scheduler = Scheduler.get();
 		scheduler.scheduleFixedPeriod(new RepeatingCommand() {
 			@Override
 			public boolean execute() {
-				for (Device device: devices) {
-					client.updateDevice(device, label);
+				for (Device device: devices.values()) {
+					client.updateDevice(device, msgLabel);
 				}
 				return true;
 			}}, 
-			5000); // every 5 seconds. 
+			5 * 60 * 1000); // every 5 minutes. 
 
 		
 	}
@@ -476,4 +556,14 @@ public class KNXUI implements EntryPoint {
 		}		
 		return tempUrl.toString();
 	}
+	
+
+	static public class DeviceVO extends JavaScriptObject {
+		
+		// Overlay types always have protected, zero argument constructors.
+		  protected DeviceVO() {}
+		  
+		// JSNI methods to get stock data.
+		  public final native String getId() /*-{ return this.id; }-*/;  
+	}	
 }

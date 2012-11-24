@@ -39,22 +39,6 @@ public class KNXSwitchedLight extends SwitchedLight implements KNXDevice {
 		this.adapter = KNXAdapter.getInstance();
 	}	
 	
-	public String getStateGroup() {
-		return stateGroup;
-	}
-
-	public void setStateGroup(String stateGroup) {
-		this.stateGroup = stateGroup;
-	}
-
-	public String getSwitchGroup() {
-		return switchGroup;
-	}
-
-	public void setSwitchGroup(String switchGroup) {
-		this.switchGroup = switchGroup;
-	}
-
 	@Override
 	public void turnOn() {
 		adapter.sendBoolean(switchGroup, true);

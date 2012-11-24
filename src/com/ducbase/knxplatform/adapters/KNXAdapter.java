@@ -1,5 +1,7 @@
 package com.ducbase.knxplatform.adapters;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -13,8 +15,24 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
+import org.mortbay.util.ajax.JSON;
 
 import com.ducbase.knxplatform.WebSocketManager;
+import com.ducbase.knxplatform.adapters.devices.KNXBooleanStatus;
+import com.ducbase.knxplatform.adapters.devices.KNXDimmedLight;
+import com.ducbase.knxplatform.adapters.devices.KNXSwitchedLight;
+import com.ducbase.knxplatform.adapters.devices.KNXTemperatureSensor;
+import com.ducbase.knxplatform.adapters.devices.KNXThermostat;
+import com.ducbase.knxplatform.devices.Device;
+import com.ducbase.knxplatform.devices.DeviceManager;
+import com.google.gwt.core.client.JsonUtils;
+import com.google.gwt.json.client.JSONObject;
+import com.sun.jersey.api.json.JSONJAXBContext;
+import com.sun.jersey.api.json.JSONMarshaller;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -115,82 +133,37 @@ public class KNXAdapter {
 	 * 
 	 */
 	public void prefetch() {
-		logger.info("Prefetching states from KNX");
+		logger.info("Prefetching states from KNX (in a separate thread)");
 		
-		StringBuffer prefetchList = new StringBuffer();
-		
-		for(String address: listenFor.keySet()) {
-			prefetchList.append(address + " ");
-			try {
-				GroupAddress ga = new GroupAddress(address);
-				DPT dpt = typeMap.get(address);
-				Datapoint dp = new StateDP(ga, "", 0, dpt.getID());
-				pc.read(dp);
-			} catch (KNXException e) {
-				logger.warning("Exception while prefetching " + address + " - " + e.getMessage());
-			}
-		}
-		
-		logger.fine("Prefetch list: " + prefetchList);	
-		
-		
-		/*
-		
-		String[] boolGroups = {"0/1/0", "0/1/1", "0/1/3", "0/1/4", // Alarm status.
-				"2/0/4"};	// heating on/off
-						
-		for(String address: boolGroups) {
-			try {
-				pc.readBool(new GroupAddress(address));
-			} catch (KNXException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		
-		
-		String scalingGroupsPrefix = "2/3/";  // just heating variables for now.
-		for(int i = 0; i <= 13; i++) {
-			if (i == 1 || i == 2 || i == 3 || i == 11) continue; // nothing at 2/3/x 			
-			try {
-				pc.readUnsigned(new GroupAddress(scalingGroupsPrefix + i), ProcessCommunicator.SCALING);
-			} catch (KNXException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		String scalingGroupsPrefix2 = "2/5/";  // just mode variables for now.
-		for(int i = 0; i <= 9; i++) {
-			try {
-				pc.readUnsigned(new GroupAddress(scalingGroupsPrefix2 + i), ProcessCommunicator.UNSCALED);
-			} catch (KNXException e) {
-				e.printStackTrace();
-			}
-		}	
-		try {
-			// wasplaats and entertain behave differently.
-			pc.readUnsigned(new GroupAddress("2/4/2"), ProcessCommunicator.UNSCALED);
-			pc.readUnsigned(new GroupAddress("2/4/3"), ProcessCommunicator.UNSCALED);
-		} catch (KNXException e) {
-			e.printStackTrace();
-		}
-		
-		String[] floatGroupPrefixes = {"2/1/", //actual temp 
-								"2/2/"}; // setpoint temp
-		for(String prefix: floatGroupPrefixes) {
-			for(int i = 0; i <= 9; i++) { // for both prefixes, get all groups
+		Runnable task = new Runnable() {
+
+			@Override
+			public void run() {
 				try {
-					pc.readFloat(new GroupAddress(prefix + i));
-				} catch (KNXException e) {
-					e.printStackTrace();
+					Thread.sleep(20 * 1000); // wait 20 secs before starting to give us time to boot
+				} catch (InterruptedException e1) {}
+				
+				StringBuffer prefetchList = new StringBuffer();
+				for(String address: listenFor.keySet()) {
+					prefetchList.append(address + " ");
+					try {
+						GroupAddress ga = new GroupAddress(address);
+						DPT dpt = typeMap.get(address);
+						Datapoint dp = new StateDP(ga, "", 0, dpt.getID());
+						pc.read(dp);
+					} catch (KNXException e) {
+						logger.warning("Exception while prefetching " + address + " - " + e.getMessage());
+					}
+					try {
+						Thread.sleep(250); // wait a bit before starting the next... don't overload KNX.
+					} catch (InterruptedException e1) {}
 				}
+				logger.fine("Done prefetching. Prefetch list: " + prefetchList);	
 			}
 			
-		}
-		*/
-		
-		logger.info("Done prefetching states from KNX");		
-		
+		};
+		Thread thread = new Thread(task);
+		thread.start();		
 	}
 
 	/**
@@ -341,8 +314,29 @@ public class KNXAdapter {
 		Element valueElement = new Element(groupAddress, value);
 		cache.put(valueElement);
 		
-		// WebSocketManager wsMgr = WebSocketManager.getInstance();
-		// wsMgr.broadcast();
+		// find device from group ID (look in listenFor)
+		String deviceId = listenFor.get(groupAddress);
+		DeviceManager deviceManager = DeviceManager.getInstance();
+		Device device = deviceManager.getDevice(deviceId);
+		
+		// device -> JSON
+		Class[] classes = new Class[] {KNXBooleanStatus.class, KNXSwitchedLight.class, KNXDimmedLight.class, KNXTemperatureSensor.class, KNXThermostat.class};
+		try {
+			JSONJAXBContext context = new JSONJAXBContext(classes);	
+			JSONMarshaller m = context.createJSONMarshaller();
+			StringWriter writer = new StringWriter();
+			m.marshallToJSON(device, writer);
+			String json = writer.toString();
+			logger.fine("JSON: " + json);
+
+			WebSocketManager wsMgr = WebSocketManager.getInstance();
+			wsMgr.broadcast(json);
+			
+		} catch (JAXBException|IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	

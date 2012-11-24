@@ -46,10 +46,10 @@ public class Thermostat extends Device implements ClickHandler {
 		VerticalPanel vPanel = new VerticalPanel();
 		vPanel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 		
-		actualLabel.setStyleName("knx-thermostat-actual");
-		vPanel.add(actualLabel);
 		setpointLabel.setStyleName("knx-thermostat-setpoint");
 		vPanel.add(setpointLabel);
+		actualLabel.setStyleName("knx-thermostat-actual");
+		vPanel.add(actualLabel);
 		setpointLabel.addClickHandler(this);
 		panel.add(vPanel);
 		
@@ -99,9 +99,9 @@ public class Thermostat extends Device implements ClickHandler {
 		this.variable = variable;
 		
 		if (this.variable > 0) {
-			setpointLabel.setStyleDependentName("heating", true);
+			actualLabel.setStyleDependentName("heating", true);
 		} else {
-			setpointLabel.setStyleDependentName("heating", false);
+			actualLabel.setStyleDependentName("heating", false);
 		}
 	}
 	
@@ -161,7 +161,9 @@ public class Thermostat extends Device implements ClickHandler {
 			frostImage.addClickHandler(this);
 			panel.add(frostImage);			
 			
-			setWidget(panel);			
+			setWidget(panel);		
+			
+			setStyleName("knx-thermostat-popup");
 		}
 
 		@Override
