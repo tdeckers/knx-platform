@@ -128,7 +128,7 @@ public class GoogleDriveConnector {
 	    
 	    // What sheet are we looking for?
 	    // We use the model: knx_<month><year>
-	    SimpleDateFormat formatter = new SimpleDateFormat("MMYYYY");
+	    SimpleDateFormat formatter = new SimpleDateFormat("wwYYYY");
 	    String sheetName = "knx_" + formatter.format(new Date());
 	    
 	    logger.fine("Looking for spreadsheet [" + sheetName + "]");
@@ -137,7 +137,7 @@ public class GoogleDriveConnector {
 	    SpreadsheetEntry spreadsheet = null;
 	    while (iterator.hasNext()) {
 	    	spreadsheet = iterator.next();
-	    	if ("knx_102012".equals(spreadsheet.getTitle().getPlainText())) {
+	    	if (sheetName.equals(spreadsheet.getTitle().getPlainText())) {
 	    		break;
 	    	} else {
 	    		spreadsheet = null;
