@@ -1,7 +1,7 @@
 @CHARSET "ISO-8859-1";
 
-.knx-thermostat {
-	
+.gwt-DecoratedTabPanel {
+	padding: 5px;
 }
 
 .knx-thermostat-actual { 
@@ -40,4 +40,10 @@
 
 .knx-dimmedlight-popup-label {
 	padding: 3px;
+}
+
+.knx-shutter-popup {
+  border: 2px solid #191919;
+  padding: 3px;
+  background: #F0F0F0;	
 }

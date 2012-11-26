@@ -18,6 +18,10 @@ public class ConfigDevice {
 	public String gmodew;
 	public String gdimr;
 	public String gdimw;
+	public String gupdown;
+	public String gstop;
+	public String gposr;
+	public String gposw;
 	
 	public String toString() {
 		return name + "[" + type + "]";

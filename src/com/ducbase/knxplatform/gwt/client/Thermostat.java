@@ -134,7 +134,7 @@ public class Thermostat extends Device implements ClickHandler {
 	public void onClick(ClickEvent event) {
 		if (event.getSource() == modeImage) {
 			ModePopup popup = new ModePopup();
-			popup.showRelativeTo(Thermostat.this);			
+			popup.showRelativeTo(this);			
 		}
 	}
 	

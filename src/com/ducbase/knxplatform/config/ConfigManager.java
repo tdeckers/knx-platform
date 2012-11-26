@@ -14,6 +14,7 @@ import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
 import com.ducbase.knxplatform.adapters.KNXAdapter;
 import com.ducbase.knxplatform.adapters.devices.KNXBooleanStatus;
 import com.ducbase.knxplatform.adapters.devices.KNXDimmedLight;
+import com.ducbase.knxplatform.adapters.devices.KNXShutter;
 import com.ducbase.knxplatform.adapters.devices.KNXSwitchedLight;
 import com.ducbase.knxplatform.adapters.devices.KNXTemperatureSensor;
 import com.ducbase.knxplatform.adapters.devices.KNXThermostat;
@@ -43,7 +44,7 @@ public class ConfigManager {
 		logger.info("Devices found: " + config.devices.size());
 		
 		for (ConfigDevice device: config.devices) {
-			logger.info("Loading device " + device.toString());
+			logger.fine("Loading device " + device.toString());
 			
 			// TBD: find class from device.type and do smart things with it.
 			
@@ -71,6 +72,11 @@ public class ConfigManager {
 				KNXBooleanStatus status = new KNXBooleanStatus(device.id, device.name, device.gstatus);
 				status.setDescription(device.description);
 				manager.addDevice(status);
+			}
+			if ("shutter".equalsIgnoreCase(device.type)) {
+				KNXShutter shutter = new KNXShutter(device.id, device.name, device.gupdown, device.gstop, device.gposr, device.gposw);
+				shutter.setDescription(device.description);
+				manager.addDevice(shutter);				
 			}
 		}
 	

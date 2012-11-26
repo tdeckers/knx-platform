@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.http.client.UrlBuilder;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.DecoratedTabPanel;
@@ -250,6 +251,7 @@ public class KNXUI implements EntryPoint {
 		dlOverloop.setId("L2.3");
 		absolutePanel_1.add(dlOverloop, 204, 300);
 		dlOverloop.setSize("30px", "30px");
+		devices.put(dlOverloop.getId(), dlOverloop);
 		
 		Thermostat thermo_tom = new Thermostat();
 		absolutePanel_1.add(thermo_tom, 116, 237);
@@ -257,9 +259,11 @@ public class KNXUI implements EntryPoint {
 		thermo_tom.setId("6");
 		devices.put(thermo_tom.getId(), thermo_tom);
 		
-		DimmedLight dimmedLight_3 = new DimmedLight();
-		absolutePanel_1.add(dimmedLight_3, 439, 311);
-		dimmedLight_3.setSize("30px", "30px");
+		DimmedLight dlMasterGang = new DimmedLight();
+		dlMasterGang.setId("L2.9");
+		absolutePanel_1.add(dlMasterGang, 439, 311);
+		dlMasterGang.setSize("30px", "30px");
+		devices.put(dlMasterGang.getId(), dlMasterGang);
 		
 		SwitchedLight slBureauTom = new SwitchedLight();
 		absolutePanel_1.add(slBureauTom, 101, 188);
@@ -368,6 +372,25 @@ public class KNXUI implements EntryPoint {
 		absolutePanel_1.add(slOverloopCentraal, 286, 386);
 		slOverloopCentraal.setSize("30px", "30px");
 		devices.put(slOverloopCentraal.getId(), slOverloopCentraal);
+		
+		Shutter shKamer2 = new Shutter();
+		shKamer2.setId("SH3");
+		absolutePanel_1.add(shKamer2, 15, 344);
+		shKamer2.setSize("40px", "40px");
+		devices.put(shKamer2.getId(), shKamer2);
+		
+		Shutter shMaster = new Shutter();
+		shMaster.setId("SH1");
+		absolutePanel_1.add(shMaster, 452, 91);
+		shMaster.setSize("40px", "40px");
+		devices.put(shMaster.getId(), shMaster);
+		
+		Shutter shKamer1 = new Shutter();
+		shKamer1.setId("SH2");
+		absolutePanel_1.add(shKamer1, 123, 659);
+		shKamer1.setSize("40px", "40px");
+		devices.put(shKamer1.getId(), shKamer1);
+		
 		
 		AbsolutePanel absolutePanel_3 = new AbsolutePanel();
 		tabPanel.add(absolutePanel_3, "Zolder", false);
@@ -479,7 +502,7 @@ public class KNXUI implements EntryPoint {
 		StringBuffer wsUrl = new StringBuffer(baseUrl); 
 				wsUrl.append("ws"); // lastly append the WebSocket endpoint.
 				
-		String url = new UrlBuilder()
+		final String url = new UrlBuilder()
 				.setProtocol("wss")
 				.setHost(Window.Location.getHostName())
 				.setPort(Integer.parseInt(Window.Location.getPort()))
@@ -495,7 +518,13 @@ public class KNXUI implements EntryPoint {
 
 			@Override
 			public void onClose(WebSocket socket) {
-				wsStatusLabel.setText("Closed.");
+				wsStatusLabel.setText("Closed, recreating...");
+								
+				socket = WebSocket.create(url);
+				socket.setOnMessage(this);
+				socket.setOnClose(this);
+				socket.setOnError(this);
+				socket.setOnOpen(this);
 			}
 
 			@Override
@@ -537,14 +566,13 @@ public class KNXUI implements EntryPoint {
 		scheduler.scheduleFixedPeriod(new RepeatingCommand() {
 			@Override
 			public boolean execute() {
+				// Renew all devices status
 				for (Device device: devices.values()) {
 					client.updateDevice(device, msgLabel);
 				}
 				return true;
 			}}, 
-			5 * 60 * 1000); // every 5 minutes. 
-
-		
+			5 * 60 * 1000); // every 5 minutes. 		
 	}
 
 	private String getBaseUrl() {

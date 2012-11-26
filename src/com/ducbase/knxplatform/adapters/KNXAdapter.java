@@ -24,6 +24,7 @@ import org.mortbay.util.ajax.JSON;
 import com.ducbase.knxplatform.WebSocketManager;
 import com.ducbase.knxplatform.adapters.devices.KNXBooleanStatus;
 import com.ducbase.knxplatform.adapters.devices.KNXDimmedLight;
+import com.ducbase.knxplatform.adapters.devices.KNXShutter;
 import com.ducbase.knxplatform.adapters.devices.KNXSwitchedLight;
 import com.ducbase.knxplatform.adapters.devices.KNXTemperatureSensor;
 import com.ducbase.knxplatform.adapters.devices.KNXThermostat;
@@ -63,8 +64,6 @@ import tuwien.auto.calimero.process.ProcessCommunicatorImpl;
  * <li>keep a map of all KNX devices to manage/monitor</li>
  * <li>keep a map of group addresses and the device properties they map to</li>
  * 
- * TODO:
- * <li>This class should probably by a subclass of Adapter (to create)</li>
  * 
  * @author tom@ducbase.com
  *
@@ -132,8 +131,7 @@ public class KNXAdapter {
 	 * TODO This is a hacked up version.  This should load from a list of configured devices.
 	 * 
 	 */
-	public void prefetch() {
-		logger.info("Prefetching states from KNX (in a separate thread)");
+	public void prefetch() {	
 		
 		Runnable task = new Runnable() {
 
@@ -142,6 +140,8 @@ public class KNXAdapter {
 				try {
 					Thread.sleep(20 * 1000); // wait 20 secs before starting to give us time to boot
 				} catch (InterruptedException e1) {}
+				
+				logger.info("Prefetching states from KNX (in a separate thread)");
 				
 				StringBuffer prefetchList = new StringBuffer();
 				for(String address: listenFor.keySet()) {
@@ -158,7 +158,8 @@ public class KNXAdapter {
 						Thread.sleep(250); // wait a bit before starting the next... don't overload KNX.
 					} catch (InterruptedException e1) {}
 				}
-				logger.fine("Done prefetching. Prefetch list: " + prefetchList);	
+				logger.info("Done prefetching.");
+				logger.fine("Prefetch list: " + prefetchList);	
 			}
 			
 		};
@@ -320,7 +321,7 @@ public class KNXAdapter {
 		Device device = deviceManager.getDevice(deviceId);
 		
 		// device -> JSON
-		Class[] classes = new Class[] {KNXBooleanStatus.class, KNXSwitchedLight.class, KNXDimmedLight.class, KNXTemperatureSensor.class, KNXThermostat.class};
+		Class[] classes = new Class[] {KNXBooleanStatus.class, KNXSwitchedLight.class, KNXDimmedLight.class, KNXTemperatureSensor.class, KNXThermostat.class, KNXShutter.class};
 		try {
 			JSONJAXBContext context = new JSONJAXBContext(classes);	
 			JSONMarshaller m = context.createJSONMarshaller();
@@ -358,17 +359,18 @@ public class KNXAdapter {
 			logger.fine("Sent.");
 		} catch (KNXException e) {
 			// TODO Auto-generated catch block
-//			Oct 06, 2012 7:25:57 PM org.apache.catalina.realm.LockOutRealm authenticate
-//			WARNING: An attempt was made to authenticate the locked user "admin"
-//			tuwien.auto.calimero.link.KNXLinkClosedException: link closed
-//			        at tuwien.auto.calimero.link.KNXNetworkLinkIP.doSend(KNXNetworkLinkIP.java)
-//			        at tuwien.auto.calimero.link.KNXNetworkLinkIP.send(KNXNetworkLinkIP.java)
-//			        at tuwien.auto.calimero.link.KNXNetworkLinkIP.sendRequestWait(KNXNetworkLinkIP.java)
-//			        at tuwien.auto.calimero.process.ProcessCommunicatorImpl.write(ProcessCommunicatorImpl.java)
-//			        at tuwien.auto.calimero.process.ProcessCommunicatorImpl.write(ProcessCommunicatorImpl.java)
-//			        at com.ducbase.knxplatform.adapters.KNXAdapter.sendIntUnscaled(KNXAdapter.java:197)
-//			        at com.ducbase.knxplatform.adapters.KNXService.send(KNXService.java:97)			
-			
+			e.printStackTrace();
+		}
+	}	
+
+	public synchronized void sendIntScaled(String groupAddress, int value) {
+		try {
+			GroupAddress address = new GroupAddress(groupAddress);
+			logger.fine("About to send...");
+			pc.write(address, value, ProcessCommunicator.SCALING);
+			logger.fine("Sent.");
+		} catch (KNXException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}	
