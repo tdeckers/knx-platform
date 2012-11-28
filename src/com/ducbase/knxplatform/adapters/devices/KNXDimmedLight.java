@@ -29,7 +29,7 @@ public class KNXDimmedLight extends DimmedLight implements KNXDevice {
 	private DPT switchGroupType = DPTXlatorBoolean.DPT_SWITCH;
 	
 	private String dimReadGroup;
-	private DPT dimReadGroupType = DPTXlator8BitUnsigned.DPT_PERCENT_U8; //TODO change to scaling var!
+	private DPT dimReadGroupType = DPTXlator8BitUnsigned.DPT_PERCENT_U8;
 	
 	private String dimWriteGroup;
 	private DPT dimWriteGroupType = DPTXlator8BitUnsigned.DPT_PERCENT_U8;

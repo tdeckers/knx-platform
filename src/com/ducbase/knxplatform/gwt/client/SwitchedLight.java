@@ -5,7 +5,13 @@ import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.event.dom.client.TouchEndHandler;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
+import com.google.gwt.event.dom.client.TouchStartHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Image;
 
 public class SwitchedLight extends Device implements ClickHandler {
@@ -15,10 +21,11 @@ public class SwitchedLight extends Device implements ClickHandler {
 	private String imageOff = "img/light_bulb_off.png";
 	
 	private boolean on;
+	HandlerRegistration clickHandler;
 	
 	public SwitchedLight() {
 		image.setUrl(imageOff);
-		image.addClickHandler(this);
+		clickHandler = image.addClickHandler(this);
 		
 		initWidget(image);
 		
@@ -44,6 +51,10 @@ public class SwitchedLight extends Device implements ClickHandler {
 	
 	@Override
 	public void onClick(ClickEvent event) {
+		this.processClick();
+	}
+	
+	public void processClick() { // method is reusable outside class.
 		if (on) {
 			this.setOn(false);
 		} else {
@@ -52,21 +63,43 @@ public class SwitchedLight extends Device implements ClickHandler {
 		
 		// Send update!
 		 String data = "{'on': '" + this.isOn() + "'}";
-		 ServiceClient.sendData(data,this.getUrl());
+		 ServiceClient.sendData(data,this.getUrl());			
 	}
 	
-	public void addClickHandler(ClickHandler handler) {
-		image.addClickHandler(handler);
+	public HandlerRegistration addClickHandler(ClickHandler handler) {
+		return image.addClickHandler(handler);
 	}
 	
-	public void addDoubleClickHandler(DoubleClickHandler handler) {
-		image.addDoubleClickHandler(handler);
+	public HandlerRegistration addDoubleClickHandler(DoubleClickHandler handler) {
+		return image.addDoubleClickHandler(handler);
 	}
 
-	public void addTouchMoveHandler(TouchMoveHandler handler) {
-		image.addTouchMoveHandler(handler);
+	public HandlerRegistration addTouchMoveHandler(TouchMoveHandler handler) {
+		return image.addTouchMoveHandler(handler);
 	}
-
+	
+	public HandlerRegistration addTouchStartHandler(TouchStartHandler handler) {
+		return image.addTouchStartHandler(handler);
+	}
+	
+	public HandlerRegistration addTouchEndHandler(TouchEndHandler handler) {
+		return image.addTouchEndHandler(handler);
+	}
+	
+	public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
+		return image.addMouseDownHandler(handler);
+	}
+	
+	public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
+		return image.addMouseMoveHandler(handler);
+	}
+	
+	public HandlerRegistration addMouseUpHandler(MouseUpHandler handler) {
+		return image.addMouseUpHandler(handler);
+	}
+	
+	
+	
 	@Override
 	public void update(String json) {
 		SwitchedLightVO light = JsonUtils.safeEval(json);

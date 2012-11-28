@@ -21,7 +21,12 @@ import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.TouchStartEvent;
+import com.google.gwt.event.dom.client.TouchStartHandler;
 import com.google.gwt.http.client.UrlBuilder;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -511,9 +516,12 @@ public class KNXUI implements EntryPoint {
 		
 		WebSocket socket = WebSocket.create(url);
 		MessageHandler handler = new MessageHandler(){
+			DateTimeFormat fmt = DateTimeFormat.getFormat("dd/MM/yyyy HH:mm:ss [zzz]");
+			int connectCount = 0;
+			
 			@Override
 			public void onOpen(WebSocket socket) {
-				wsStatusLabel.setText("Opened.");
+				wsStatusLabel.setText("Opened (" + fmt.format(new Date()) + ", count: " + ++connectCount + ").");
 			}
 
 			@Override
@@ -529,7 +537,7 @@ public class KNXUI implements EntryPoint {
 
 			@Override
 			public void onError(WebSocket socket) {
-				wsStatusLabel.setText("Error.");
+				wsStatusLabel.setText("Error (" + fmt.format(new Date()) + ").");
 			}
 
 			@Override
@@ -540,7 +548,7 @@ public class KNXUI implements EntryPoint {
 					String id = jso.getId();
 					Device device = devices.get(id);
 					device.update(data);
-					msgLabel.setText(new Date() + " - Updated device " + id);
+					msgLabel.setText(fmt.format(new Date()) + " - Updated device " + id);
 				} catch (Exception e) {
 					msgLabel.setText("WS EXCEPTION: " + e.getMessage());
 				}				
@@ -572,7 +580,7 @@ public class KNXUI implements EntryPoint {
 				}
 				return true;
 			}}, 
-			5 * 60 * 1000); // every 5 minutes. 		
+			5 * 60 * 1000); // every 5 minutes. 			
 	}
 
 	private String getBaseUrl() {

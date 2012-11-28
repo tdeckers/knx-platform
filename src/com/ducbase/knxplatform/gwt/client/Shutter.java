@@ -1,14 +1,11 @@
 package com.ducbase.knxplatform.gwt.client;
 
-import com.ducbase.knxplatform.gwt.client.Thermostat.ModePopup;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.AbsolutePanel;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -17,13 +14,12 @@ public class Shutter extends Device implements ClickHandler {
 	Image window = new Image("img/window.png");
 	Image grey = new Image("img/grey.jpg");
 	private String imageUp = "img/up.png";
+	private String imageStop = "img/stop.png";
 	private String imageDown = "img/down.png";
 
 	private int position;
 	
 	public Shutter() {
-		//label.setText("22");
-		
 		AbsolutePanel panel = new AbsolutePanel();
 		window.addClickHandler(this);
 		panel.add(window, 0, 0);
@@ -56,7 +52,6 @@ public class Shutter extends Device implements ClickHandler {
 			CommandPopup popup = new CommandPopup();
 			popup.setPopupPosition(x + 20, y - 40);
 			popup.show();
-			// popup.showRelativeTo(this);
 		}
 		
 	}
@@ -82,7 +77,7 @@ public class Shutter extends Device implements ClickHandler {
 		
 		Image upImage = new Image(imageUp);
 		Image downImage = new Image(imageDown);
-		Label stopLabel = new Label("stop");
+		Image stopImage = new Image(imageStop);
 		
 		public CommandPopup() {			
 			super(true);
@@ -92,8 +87,9 @@ public class Shutter extends Device implements ClickHandler {
 			upImage.addClickHandler(this);
 			panel.add(upImage);
 			
-			stopLabel.addClickHandler(this);
-			panel.add(stopLabel);
+			stopImage.setSize("30px", "30px");
+			stopImage.addClickHandler(this);
+			panel.add(stopImage);
 			
 			downImage.setSize("30px", "30px");
 			downImage.addClickHandler(this);
@@ -110,7 +106,7 @@ public class Shutter extends Device implements ClickHandler {
 			if (event.getSource() == upImage) {
 				processClick("up");
 			}
-			if (event.getSource() == stopLabel) {
+			if (event.getSource() == stopImage) {
 				processClick("stop");
 			}
 			if (event.getSource() == downImage) {

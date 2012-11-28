@@ -3,25 +3,38 @@ package com.ducbase.knxplatform.gwt.client;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsonUtils;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Touch;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DoubleClickEvent;
-import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.event.dom.client.DomEvent;
+import com.google.gwt.event.dom.client.HumanInputEvent;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.MouseEvent;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
+import com.google.gwt.event.dom.client.TouchEndEvent;
+import com.google.gwt.event.dom.client.TouchEndHandler;
+import com.google.gwt.event.dom.client.TouchEvent;
 import com.google.gwt.event.dom.client.TouchMoveEvent;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
+import com.google.gwt.event.dom.client.TouchStartEvent;
+import com.google.gwt.event.dom.client.TouchStartHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.UIObject;
 
-public class DimmedLight extends Device implements ClickHandler, DoubleClickHandler  {
+public class DimmedLight extends Device implements MouseDownHandler, MouseMoveHandler, MouseUpHandler, 
+												TouchStartHandler, TouchMoveHandler, TouchEndHandler  {
 
 	SwitchedLight light = new SwitchedLight();
 	Label label = new Label();
@@ -31,10 +44,20 @@ public class DimmedLight extends Device implements ClickHandler, DoubleClickHand
 		HorizontalPanel panel = new HorizontalPanel();
 		panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		
+		if (light.clickHandler != null) {  		// Remove click handler from light
+			light.clickHandler.removeHandler(); // We implement our own handlers here.
+		}
+		
 		panel.add(light);
 		panel.add(label);
-		light.addDoubleClickHandler(this);
-		label.addDoubleClickHandler(this);
+		
+		light.addMouseDownHandler(this);
+		light.addMouseMoveHandler(this);		
+		light.addMouseUpHandler(this);
+		
+		light.addTouchStartHandler(this);	
+		light.addTouchMoveHandler(this);
+		light.addTouchEndHandler(this);
 		
 		this.setDimValue(0);		
 		
@@ -57,102 +80,159 @@ public class DimmedLight extends Device implements ClickHandler, DoubleClickHand
 		return dimValue;
 	}
 
+	/**
+	 * set dimValue.
+	 * 
+	 * @param dimValue new dim value.  If dimValue is greater than 100, dimValue is set to 100. If dimValue is smaller than
+	 * 0, dimValue is set to 0.
+	 */
 	public void setDimValue(int dimValue) {
+		if (dimValue > 100) {
+			dimValue = 100;
+		}
+		if (dimValue < 0) {
+			dimValue = 0;
+		}
 		this.dimValue = dimValue;
 		label.setText(dimValue + " %");
 	}
 	
-	@Override
-	public void onClick(ClickEvent event) {
-
-	}
+//	@Override
+//	public void onDoubleClick(DoubleClickEvent event) {
+//		DimPopup popup = new DimPopup(dimValue);
+//		popup.showRelativeTo((UIObject) event.getSource());
+//	}	
 	
-	class DimmerPopupPanel extends PopupPanel {
-		
-		public DimmerPopupPanel() {
-			super(true); // enable auto-hide
-			
-		}
-	}
+	// Admin variables
+	boolean mouseMoved = false;
+	boolean clickStart = false;
+	int startX;
+	int startY;
+	int startDimValue;
 	
 	@Override
-	public void onDoubleClick(DoubleClickEvent event) {
-		DimPopup popup = new DimPopup(dimValue);
-		popup.showRelativeTo((UIObject) event.getSource());
+	public void onMouseDown(MouseDownEvent event) {
+		GWT.log("mouse down");
+		processStart(event);
 	}	
-
-	class DimPopup extends PopupPanel implements CloseHandler<PopupPanel> {
+	
+	@Override
+	public void onTouchStart(TouchStartEvent event) {
+		GWT.log("touch start");
+		processStart(event);
+	}	
+	
+	private void processStart(DomEvent event) {
+		event.preventDefault();  // Prevent image drag behavior
+		event.stopPropagation();
 		
-		Image minus = new Image("img/minus.png");
-		Image plus = new Image("img/plus.png");
-		Label label = new Label();
-		
-		int origDimValue; // Keep dimValue we started with.  Only on change need to update.
-		int dimValue;
-		
-		public DimPopup(int dimValue) {
-			super(true);
-			
-			this.origDimValue = dimValue;
-			this.dimValue = dimValue;
-			
-			HorizontalPanel panel = new HorizontalPanel();
-			panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-
-			minus.setPixelSize(30, 30);
-			panel.add(minus);
-			label.setText(dimValue + " %");
-			label.setStyleName("knx-dimmedlight-popup-label");
-			panel.add(label);
-			plus.setPixelSize(30, 30);
-			panel.add(plus);			
-
-			minus.addClickHandler(new ClickHandler() {				
-				@Override
-				public void onClick(ClickEvent event) {
-					decreaseDimValue();					
-				}
-			});
-			
-			plus.addClickHandler(new ClickHandler() {				
-				@Override
-				public void onClick(ClickEvent event) {
-					increaseDimValue();
-					
-				}
-			});
-			
-			this.addCloseHandler(this);
-			
-			setWidget(panel);		
-			setStyleName("knx-dimmedlight-popup");
+		// reset values
+		mouseMoved = false;		
+		clickStart = true; // start the logic.
+		startDimValue = dimValue;
+		if (event instanceof MouseEvent) {
+			MouseEvent mEvent = (MouseEvent) event;
+			startX = mEvent.getClientX();
+			startY = mEvent.getClientY();	
 		}
-		
-		private void decreaseDimValue() {
-			dimValue -= 10;
-			if (dimValue < 0) { dimValue = 0; };
-			label.setText(dimValue + " %");
-		}
-		
-		private void increaseDimValue() {
-			dimValue += 10;
-			if (dimValue > 100) { dimValue = 100; };
-			label.setText(dimValue + " %");
-		}
-
-		@Override
-		public void onClose(CloseEvent<PopupPanel> event) {
-			if (origDimValue != dimValue) {
-				DimmedLight.this.setDimValue(dimValue);
-				
-				// Send update!
-				String data = "{'dimValue': '" + dimValue + "'}";
-				ServiceClient.sendData(data, DimmedLight.this.getUrl());
+		if (event instanceof TouchEvent) {
+			TouchEvent tEvent = (TouchEvent) event;
+			JsArray<Touch> touches = tEvent.getTouches();
+			Touch touch = touches.get(0);
+			if (touch != null) {
+				startX = touch.getClientX();
+				startY = touch.getClientY();
 			}
 		}
 		
+		// Capture all mouse events uptil mouseUp.  Without this, we loose capture when the cursor
+		// moves outside the light image.
+		DOM.setCapture(light.getElement());
 	}
 	
+	
+	@Override
+	public void onMouseMove(MouseMoveEvent event) {
+		//GWT.log("mouse move");
+		processMove(event);
+	}
+	
+	@Override
+	public void onTouchMove(TouchMoveEvent event) {
+		//GWT.log("touch move");
+		processMove(event);
+	}	
+	
+	private void processMove(DomEvent event) {  // TODO on touch, show large label with dimValue
+		if(clickStart) {
+			mouseMoved = true;
+			
+			int x = 0;
+			int y = 0;
+			if (event instanceof MouseEvent) {
+				MouseEvent mEvent = (MouseEvent) event;
+				x = mEvent.getClientX();
+				y = mEvent.getClientY();	
+			}
+			if (event instanceof TouchEvent) {
+				TouchEvent tEvent = (TouchEvent) event;
+				JsArray<Touch> touches = tEvent.getTouches();
+				Touch touch = touches.get(0);
+				if (touch != null) {
+					x = touch.getClientX();
+					y = touch.getClientY();
+				}
+			}			
+			
+			// Calculate distance
+			double distance = Math.sqrt(Math.pow(Math.abs(x - startX), 2) + Math.pow(Math.abs(y - startY), 2));
+			// Calculate direction
+			int up = 0;
+			if ( (x > startX) && (y < startY) ) {
+				up = 1;
+			} else if ( (x < startX) && (y > startY) ) {
+				up = -1;
+			}
+			//GWT.log("Distance: " + distance + " (" + up + ")");
+			
+			int dimDiff = (int) Math.round(distance);
+			
+			if (up != 0) {				
+				setDimValue(startDimValue + up * dimDiff);
+			}
+		}
+	}
+	
+	@Override
+	public void onMouseUp(MouseUpEvent event) {
+		GWT.log("mouse up");
+		processEnd(event);
+	}
+	
+	@Override
+	public void onTouchEnd(TouchEndEvent event) {
+		GWT.log("touch end");
+		processEnd(event);
+		
+	}
+
+	private void processEnd(DomEvent event) {
+		if (!mouseMoved) {
+			light.processClick();
+		} else {
+			// we moved.  Sent updated value.  We can use this.getDimValue since we set it in mousemove.
+			String data = "{'dimValue': '" + this.getDimValue() + "'}";
+			ServiceClient.sendData(data, this.getUrl());  			
+		}
+		
+		clickStart = false;
+		// release capture when done.
+		DOM.releaseCapture(light.getElement());
+	}
+
+
+
+
 	@Override
 	public void update(String json) {
 		light.update(json);
