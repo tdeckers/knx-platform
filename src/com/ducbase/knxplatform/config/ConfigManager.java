@@ -5,17 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.logging.Logger;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 
-import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
-
-import com.ducbase.knxplatform.adapters.KNXAdapter;
-import com.ducbase.knxplatform.adapters.devices.KNXBooleanStatus;
 import com.ducbase.knxplatform.adapters.devices.KNXDimmedLight;
 import com.ducbase.knxplatform.adapters.devices.KNXShutter;
-import com.ducbase.knxplatform.adapters.devices.KNXSwitchedLight;
+import com.ducbase.knxplatform.adapters.devices.KNXSwitched;
 import com.ducbase.knxplatform.adapters.devices.KNXTemperatureSensor;
 import com.ducbase.knxplatform.adapters.devices.KNXThermostat;
 import com.ducbase.knxplatform.devices.DeviceManager;
@@ -48,10 +42,10 @@ public class ConfigManager {
 			
 			// TBD: find class from device.type and do smart things with it.
 			
-			if ("switchedlight".equalsIgnoreCase(device.type)) {
-				KNXSwitchedLight light = new KNXSwitchedLight(device.id, device.name, device.gstatus, device.gswitch);
-				light.setDescription(device.description);
-				manager.addDevice(light);
+			if ("switched".equalsIgnoreCase(device.type)) {
+				KNXSwitched switched = new KNXSwitched(device.id, device.name, device.gstatus, device.gswitch);
+				switched.setDescription(device.description);
+				manager.addDevice(switched);
 			}
 			if ("dimmedlight".equalsIgnoreCase(device.type)) {
 				KNXDimmedLight light = new KNXDimmedLight(device.id, device.name, device.gstatus, device.gswitch, device.gdimr, device.gdimw);
@@ -67,11 +61,6 @@ public class ConfigManager {
 				KNXThermostat thermostat = new KNXThermostat(device.id, device.name, device.gactual, device.gsetpointr, device.gsetpointw, device.gvariable, device.gmoder, device.gmodew);
 				thermostat.setDescription(device.description);
 				manager.addDevice(thermostat);				
-			}
-			if ("booleanstatus".equalsIgnoreCase(device.type)) {
-				KNXBooleanStatus status = new KNXBooleanStatus(device.id, device.name, device.gstatus);
-				status.setDescription(device.description);
-				manager.addDevice(status);
 			}
 			if ("shutter".equalsIgnoreCase(device.type)) {
 				KNXShutter shutter = new KNXShutter(device.id, device.name, device.gupdown, device.gstop, device.gposr, device.gposw);

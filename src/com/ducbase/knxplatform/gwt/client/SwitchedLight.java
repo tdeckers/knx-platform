@@ -17,8 +17,8 @@ import com.google.gwt.user.client.ui.Image;
 public class SwitchedLight extends Device implements ClickHandler {
 
 	private Image image = new Image();
-	private String imageOn = "img/light_bulb_on.png";
-	private String imageOff = "img/light_bulb_off.png";
+	private String imageOn = "img/light_bulb_on.png"; // default value
+	private String imageOff = "img/light_bulb_off.png"; // default value
 	
 	private boolean on;
 	HandlerRegistration clickHandler;
@@ -99,7 +99,22 @@ public class SwitchedLight extends Device implements ClickHandler {
 	}
 	
 	
-	
+	public String getImageOn() {
+		return imageOn;
+	}
+
+	public void setImageOn(String imageOn) {
+		this.imageOn = imageOn;
+	}
+
+	public String getImageOff() {
+		return imageOff;
+	}
+
+	public void setImageOff(String imageOff) {
+		this.imageOff = imageOff;
+	}
+
 	@Override
 	public void update(String json) {
 		SwitchedLightVO light = JsonUtils.safeEval(json);

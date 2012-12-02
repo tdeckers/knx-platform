@@ -1,6 +1,5 @@
 package com.ducbase.knxplatform.gwt.client;
 
-import com.ducbase.knxplatform.gwt.client.SwitchedLight.SwitchedLightVO;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.user.client.ui.Label;

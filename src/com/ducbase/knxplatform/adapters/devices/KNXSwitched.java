@@ -13,11 +13,11 @@ import tuwien.auto.calimero.dptxlator.DPT;
 import tuwien.auto.calimero.dptxlator.DPTXlatorBoolean;
 
 import com.ducbase.knxplatform.adapters.KNXAdapter;
-import com.ducbase.knxplatform.devices.SwitchedLight;
+import com.ducbase.knxplatform.devices.Switched;
 
 
 @XmlRootElement
-public class KNXSwitchedLight extends SwitchedLight implements KNXDevice {
+public class KNXSwitched extends Switched implements KNXDevice {
 
 	private KNXAdapter adapter;
 	
@@ -27,26 +27,43 @@ public class KNXSwitchedLight extends SwitchedLight implements KNXDevice {
 	private String switchGroup;
 	private DPT switchGroupType = DPTXlatorBoolean.DPT_SWITCH;
 	
-	public KNXSwitchedLight() {		
+	private boolean canRead = false;
+	private boolean canWrite = false;
+	
+	public KNXSwitched() {		
 	}
 	
-	public KNXSwitchedLight(String id, String name, String stateGroup, String switchGroup) {
+	public KNXSwitched(String id, String name, String stateGroup, String switchGroup) {
 		this.setId(id);
 		this.setName(name);
 		this.stateGroup = stateGroup;
+		if (this.stateGroup != null && !"".equals(this.stateGroup)) {
+			canRead = true;
+		}
 		this.switchGroup = switchGroup;
+		if (this.switchGroup != null && !"".equals(this.switchGroup)) {
+			canWrite = true;
+		}
+		
+		if ( (!canRead) && (!canWrite)) {
+			throw new RuntimeException("Either stategroup or switchgroup must be configured");
+		}
 		
 		this.adapter = KNXAdapter.getInstance();
-	}	
+	}		
 	
 	@Override
-	public void turnOn() {
-		adapter.sendBoolean(switchGroup, true);
+	public void turnOn() {	
+		if (!this.isReadonly()) {
+			adapter.sendBoolean(switchGroup, true);
+		}
 	}
 
 	@Override
 	public void turnOff() {
-		adapter.sendBoolean(switchGroup, false);
+		if (!this.isReadonly()) {
+			adapter.sendBoolean(switchGroup, false);
+		}
 	}
 
 	@Override
@@ -61,6 +78,10 @@ public class KNXSwitchedLight extends SwitchedLight implements KNXDevice {
 	@XmlElement
 	@Override
 	public Boolean isOn() {
+		if (this.isWriteonly()) {
+			throw new RuntimeException(this.getId() + " is write only.");
+		}
+		
 		String stateString = adapter.getValueForGroupAddress(stateGroup);
 		if ("on".equalsIgnoreCase(stateString)) {
 			return true;
@@ -68,21 +89,45 @@ public class KNXSwitchedLight extends SwitchedLight implements KNXDevice {
 			return false;
 		}
 	}
+	
+	@XmlElement
+	@Override
+	public Boolean isReadonly() {
+		return canRead && !canWrite;
+	}
+
+	@XmlElement
+	@Override
+	public Boolean isWriteonly() {
+		return canWrite && !canRead;
+	}	
 
 	@Override
 	public String[] getListenGroups() {
-		return new String[] { this.stateGroup };
+		if (!this.isWriteonly()) {
+			return new String[] { this.stateGroup };
+		} else {
+			return new String[] {};
+		}
 	}
 	
 	public Map<String, DPT> getTypeMap() {
 		Map<String, DPT> map = new HashMap<String, DPT>();
-		map.put(this.stateGroup, this.stateGroupType);
-		map.put(this.switchGroup, this.switchGroupType);
+		if (!this.isWriteonly()) {
+			map.put(this.stateGroup, this.stateGroupType);
+		}
+		if (!this.isReadonly()) {
+			map.put(this.switchGroup, this.switchGroupType);
+		}
 		return map;
 	}
 
 	@Override
 	public void update(JSONObject object) throws DeviceException {
+		if (this.isWriteonly()) {
+			return; // no updates expected!
+		}
+		
 		boolean on;
 		try {
 			 on = object.getBoolean("on");  // this is how the bean property is called (see this class)
@@ -96,5 +141,4 @@ public class KNXSwitchedLight extends SwitchedLight implements KNXDevice {
 			this.turnOff();
 		}
 	}
-
 }

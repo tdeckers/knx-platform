@@ -139,4 +139,14 @@ public class KNXDimmedLight extends DimmedLight implements KNXDevice {
 		} 				
 	}
 
+	@Override
+	public Boolean isReadonly() {
+		return false; // expect readable.
+	}
+
+	@Override
+	public Boolean isWriteonly() {
+		return false; // expect writable.
+	}
+
 }

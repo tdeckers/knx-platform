@@ -1,12 +1,8 @@
 package com.ducbase.knxplatform.devices;
 
-import org.codehaus.jettison.json.JSONObject;
-
-import com.ducbase.knxplatform.adapters.devices.DeviceException;
-
-public abstract class DimmedLight extends SwitchedLight {
+public abstract class DimmedLight extends Switched {
 
 	abstract public void setDimValue(Integer value);
 	abstract public Integer getDimValue();
-
+	
 }

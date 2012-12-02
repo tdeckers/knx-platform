@@ -109,6 +109,7 @@ public class DimmedLight extends Device implements MouseDownHandler, MouseMoveHa
 	int startX;
 	int startY;
 	int startDimValue;
+	double velocity = 1;
 	
 	@Override
 	public void onMouseDown(MouseDownEvent event) {
@@ -182,6 +183,7 @@ public class DimmedLight extends Device implements MouseDownHandler, MouseMoveHa
 					x = touch.getClientX();
 					y = touch.getClientY();
 				}
+				velocity = 0.25; // touches seem to be more sensitive, dial down the action.
 			}			
 			
 			// Calculate distance
@@ -195,7 +197,7 @@ public class DimmedLight extends Device implements MouseDownHandler, MouseMoveHa
 			}
 			//GWT.log("Distance: " + distance + " (" + up + ")");
 			
-			int dimDiff = (int) Math.round(distance);
+			int dimDiff = (int) Math.round(distance * velocity);
 			
 			if (up != 0) {				
 				setDimValue(startDimValue + up * dimDiff);

@@ -7,33 +7,13 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-
-import org.mortbay.util.ajax.JSON;
-
-import com.ducbase.knxplatform.WebSocketManager;
-import com.ducbase.knxplatform.adapters.devices.KNXBooleanStatus;
-import com.ducbase.knxplatform.adapters.devices.KNXDimmedLight;
-import com.ducbase.knxplatform.adapters.devices.KNXShutter;
-import com.ducbase.knxplatform.adapters.devices.KNXSwitchedLight;
-import com.ducbase.knxplatform.adapters.devices.KNXTemperatureSensor;
-import com.ducbase.knxplatform.adapters.devices.KNXThermostat;
-import com.ducbase.knxplatform.devices.Device;
-import com.ducbase.knxplatform.devices.DeviceManager;
-import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.json.client.JSONObject;
-import com.sun.jersey.api.json.JSONJAXBContext;
-import com.sun.jersey.api.json.JSONMarshaller;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -56,6 +36,17 @@ import tuwien.auto.calimero.link.event.NetworkLinkListener;
 import tuwien.auto.calimero.link.medium.TPSettings;
 import tuwien.auto.calimero.process.ProcessCommunicator;
 import tuwien.auto.calimero.process.ProcessCommunicatorImpl;
+
+import com.ducbase.knxplatform.WebSocketManager;
+import com.ducbase.knxplatform.adapters.devices.KNXDimmedLight;
+import com.ducbase.knxplatform.adapters.devices.KNXShutter;
+import com.ducbase.knxplatform.adapters.devices.KNXSwitched;
+import com.ducbase.knxplatform.adapters.devices.KNXTemperatureSensor;
+import com.ducbase.knxplatform.adapters.devices.KNXThermostat;
+import com.ducbase.knxplatform.devices.Device;
+import com.ducbase.knxplatform.devices.DeviceManager;
+import com.sun.jersey.api.json.JSONJAXBContext;
+import com.sun.jersey.api.json.JSONMarshaller;
 
 /**
  * abstraction layer for the KNX interface.
@@ -134,32 +125,56 @@ public class KNXAdapter {
 	public void prefetch() {	
 		
 		Runnable task = new Runnable() {
+			
+			final int MAX_RETRIES = 5;
+			
+			boolean hasRun = false;
+			int retries = 0;
 
 			@Override
 			public void run() {
-				try {
-					Thread.sleep(20 * 1000); // wait 20 secs before starting to give us time to boot
-				} catch (InterruptedException e1) {}
-				
-				logger.info("Prefetching states from KNX (in a separate thread)");
-				
-				StringBuffer prefetchList = new StringBuffer();
-				for(String address: listenFor.keySet()) {
-					prefetchList.append(address + " ");
-					try {
-						GroupAddress ga = new GroupAddress(address);
-						DPT dpt = typeMap.get(address);
-						Datapoint dp = new StateDP(ga, "", 0, dpt.getID());
-						pc.read(dp);
-					} catch (KNXException e) {
-						logger.warning("Exception while prefetching " + address + " - " + e.getMessage());
+				while (!hasRun) {
+					
+					if (retries > MAX_RETRIES) {
+						logger.warning("Retries exceeded. Not retrying to prefetch.");
+						return;
+					} else {
+						retries++;
 					}
+					
 					try {
-						Thread.sleep(250); // wait a bit before starting the next... don't overload KNX.
+						Thread.sleep(20 * 1000); // wait 20 secs before starting to give us time to boot
 					} catch (InterruptedException e1) {}
+					
+					if (pc == null) {
+						logger.warning("Can't prefetch.  Not (yet?) connected!");
+						continue;
+					}
+					
+					logger.info("Prefetching states from KNX (in a separate thread)");
+					
+					StringBuffer prefetchList = new StringBuffer();
+					for(String address: listenFor.keySet()) {
+						prefetchList.append(address + " ");
+						try {
+							GroupAddress ga = new GroupAddress(address);
+							DPT dpt = typeMap.get(address);
+							Datapoint dp = new StateDP(ga, "", 0, dpt.getID());
+							pc.read(dp);
+						} catch (KNXException e) {
+							logger.warning("Exception while prefetching " + address + " - " + e.getMessage());
+						}
+						try {
+							Thread.sleep(250); // wait a bit before starting the next... don't overload KNX.
+						} catch (InterruptedException e1) {}
+					}
+					
+					logger.info("Done prefetching.");
+					logger.fine("Prefetch list: " + prefetchList);
+					
+					hasRun = true;					
 				}
-				logger.info("Done prefetching.");
-				logger.fine("Prefetch list: " + prefetchList);	
+
 			}
 			
 		};
@@ -225,7 +240,11 @@ public class KNXAdapter {
 			return;
 		}
 		logger.info("Using ip address: " + localAddress.getHostAddress());
-			
+
+		if (link != null) { // cleanup in case we've been here before.
+			link.close();			
+		}
+		
 		// connect to KNX
 		try {
 			link = new KNXNetworkLinkIP(
@@ -234,11 +253,12 @@ public class KNXAdapter {
 					new InetSocketAddress(InetAddress.getByName("192.168.2.150"), KNXnetIPConnection.IP_PORT), 
 					false, // don't use NAT
 					TPSettings.TP1);  // select TP1
-			link.addLinkListener(new NetworkLinkListener() {				
+			link.addLinkListener(new NetworkLinkListener() {
 				@Override
 				public void linkClosed(CloseEvent e) {
 					if (!e.isUserRequest()) {
 						logger.warning("Link closed! Let's reconnect. (" + e.getReason() + " | " + e.getSource().toString() + ")");
+						try {Thread.sleep(5 * 1000); } catch (Exception ex) {}; // wait 5 seconds to avoid frantic reconnect.
 						connect();
 					}
 					if (!link.isOpen()) {
@@ -321,7 +341,7 @@ public class KNXAdapter {
 		Device device = deviceManager.getDevice(deviceId);
 		
 		// device -> JSON
-		Class[] classes = new Class[] {KNXBooleanStatus.class, KNXSwitchedLight.class, KNXDimmedLight.class, KNXTemperatureSensor.class, KNXThermostat.class, KNXShutter.class};
+		Class[] classes = new Class[] {KNXSwitched.class, KNXDimmedLight.class, KNXTemperatureSensor.class, KNXThermostat.class, KNXShutter.class};
 		try {
 			JSONJAXBContext context = new JSONJAXBContext(classes);	
 			JSONMarshaller m = context.createJSONMarshaller();

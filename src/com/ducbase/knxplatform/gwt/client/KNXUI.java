@@ -467,31 +467,31 @@ public class KNXUI implements EntryPoint {
 		
 		BooleanStatus blHeating = new BooleanStatus();
 		blHeating.setId("B1");
-		absolutePanel_5.add(blHeating, 153, 101);
+		absolutePanel_5.add(blHeating, 152, 174);
 		blHeating.setSize("46px", "18px");
 		devices.put(blHeating.getId(), blHeating);
 		
-		Label lblNewLabel = new Label("Heating:");
-		absolutePanel_5.add(lblNewLabel, 11, 101);
-		lblNewLabel.setSize("123px", "18px");
+		Label lblHeating = new Label("Heating:");
+		absolutePanel_5.add(lblHeating, 10, 174);
+		lblHeating.setSize("123px", "18px");
 		
 		Label lblAlarmvolledig = new Label("Alarm (volledig):");
-		absolutePanel_5.add(lblAlarmvolledig, 10, 125);
+		absolutePanel_5.add(lblAlarmvolledig, 10, 89);
 		lblAlarmvolledig.setSize("123px", "18px");
 		
 		Label lblAlarmgedeeltelijk = new Label("Alarm (gedeeltelijk):");
-		absolutePanel_5.add(lblAlarmgedeeltelijk, 10, 149);
+		absolutePanel_5.add(lblAlarmgedeeltelijk, 10, 113);
 		lblAlarmgedeeltelijk.setSize("123px", "18px");
 		
 		BooleanStatus blAlarmVoll = new BooleanStatus();
 		blAlarmVoll.setId("B2");
-		absolutePanel_5.add(blAlarmVoll, 153, 125);
+		absolutePanel_5.add(blAlarmVoll, 153, 89);
 		blAlarmVoll.setSize("46px", "18px");
 		devices.put(blAlarmVoll.getId(), blAlarmVoll);
 		
 		BooleanStatus blAlarmGed = new BooleanStatus();
 		blAlarmGed.setId("B3");
-		absolutePanel_5.add(blAlarmGed, 153, 149);
+		absolutePanel_5.add(blAlarmGed, 153, 113);
 		blAlarmGed.setSize("46px", "18px");
 		devices.put(blAlarmGed.getId(), blAlarmGed);
 		
@@ -500,6 +500,16 @@ public class KNXUI implements EntryPoint {
 		
 		final Label wsStatusLabel = new Label("...");
 		absolutePanel_5.add(wsStatusLabel, 143, 34);
+		
+		Label lblPumpVerd = new Label("Pomp verdieping:");
+		absolutePanel_5.add(lblPumpVerd, 10, 198);
+		lblPumpVerd.setSize("123px", "18px");
+		
+		BooleanStatus blPumpVerd = new BooleanStatus();
+		blPumpVerd.setId("B5");
+		absolutePanel_5.add(blPumpVerd, 152, 198);
+		blPumpVerd.setSize("46px", "18px");
+		devices.put(blPumpVerd.getId(), blPumpVerd);
 		
 		tabPanel.selectTab(1); // set ground floor as default.
 
