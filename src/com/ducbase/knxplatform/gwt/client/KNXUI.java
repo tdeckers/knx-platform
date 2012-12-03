@@ -3,11 +3,13 @@ package com.ducbase.knxplatform.gwt.client;
 import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import com.ducbase.knxplatform.gwt.client.ws.MessageEvent;
 import com.ducbase.knxplatform.gwt.client.ws.MessageHandler;
 import com.ducbase.knxplatform.gwt.client.ws.WebSocket;
+import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -28,6 +30,8 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.CheckBox;
 
 public class KNXUI implements EntryPoint {
 
@@ -153,9 +157,15 @@ public class KNXUI implements EntryPoint {
 		absolutePanel.add(image_14, 329, 440);
 		image_14.setSize("30px", "30px");
 		
-		Image image_9 = new Image("img/light_bulb_off.png");
+		final Image image_9 = new Image("img/light_bulb_off.png");
 		absolutePanel.add(image_9, 253, 281);
 		image_9.setSize("30px", "30px");
+		image_9.addClickHandler(new ClickHandler() {			
+			@Override
+			public void onClick(ClickEvent event) {
+				shakeWidget(image_9);				
+			}
+		});
 		
 		Image image_15 = new Image("img/light_bulb_off.png");
 		absolutePanel.add(image_15, 372, 367);
@@ -559,6 +569,10 @@ public class KNXUI implements EntryPoint {
 		
 		Button btnServerUrl = new Button("Update");
 		absolutePanel_5.add(btnServerUrl, 420, 343);
+		
+		final CheckBox chkAnimations = new CheckBox("New check box");
+		chkAnimations.setHTML("Animations");
+		absolutePanel_5.add(chkAnimations, 10, 277);
 		btnServerUrl.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -603,6 +617,10 @@ public class KNXUI implements EntryPoint {
 					Device device = devices.get(id);
 					device.update(data);
 					msgLabel.setText(fmt.format(new Date()) + " - Updated device " + id);
+					// let's add some movement magic!
+					if (chkAnimations.getValue()) {
+						shakeWidget(device.asWidget());
+					}
 				} catch (Exception e) {
 					msgLabel.setText("WS EXCEPTION: " + e.getMessage());
 				}				
@@ -649,6 +667,55 @@ public class KNXUI implements EntryPoint {
 			newUrl.append('/');
 		}				
 		return newUrl.toString();
+	}
+	
+	HashSet<Widget> shaking = new HashSet<Widget>(); // keep track of who's shaking.  Can't double shake!
+	
+	private void shakeWidget(Widget widget) {
+		if (!shaking.contains(widget)) {  // only shake if we're not shaking.
+			ShakeAnimation animation = new ShakeAnimation(widget);
+			animation.run(400);
+		}
+	}
+	
+	class ShakeAnimation extends Animation {
+		AbsolutePanel panel;
+		Widget widget;
+		int initialX;
+		int initialY;
+		int factor = 15;
+		
+		ShakeAnimation(Widget w) {
+			Widget parent =  w.getParent();
+			if (parent instanceof AbsolutePanel) {
+				panel = (AbsolutePanel) parent;
+				widget = w;				
+				initialX = panel.getWidgetLeft(w);
+				initialY = panel.getWidgetTop(w);
+			}			
+		}
+		
+		protected void onStart() {
+			shaking.add(widget);
+		}
+		
+		protected void onComplete() {
+			shaking.remove(widget);
+			panel.setWidgetPosition(widget, initialX, initialY);  // make sure we're back to where we were.
+		}
+		
+		protected void onCancel() {
+			shaking.remove(widget);
+			panel.setWidgetPosition(widget, initialX, initialY); // make sure we're back to where we were.
+		}
+		
+		@Override
+		protected void onUpdate(double progress) {
+			int offsetX = Math.round((float) Math.sin(Math.PI * progress * 4) * factor);
+			int offsetY = Math.round((float) Math.sin(Math.PI * progress * 2) * factor);
+			panel.setWidgetPosition(widget, initialX + offsetX, initialY - offsetY);			
+		}
+		
 	}
 	
 
