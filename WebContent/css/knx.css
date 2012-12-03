@@ -47,3 +47,13 @@
   padding: 3px;
   background: #F0F0F0;	
 }
+
+.knx-booleancommand-popup {
+  border: 2px solid #191919;
+  padding: 3px;
+  background: #F0F0F0;	
+}
+
+.knx-booleancommand-popup-alert {
+  background: red;	
+}

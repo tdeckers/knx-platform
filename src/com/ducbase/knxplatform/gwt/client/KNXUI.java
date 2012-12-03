@@ -1,13 +1,9 @@
 package com.ducbase.knxplatform.gwt.client;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import org.codehaus.jackson.map.module.SimpleAbstractTypeResolver;
 
 import com.ducbase.knxplatform.gwt.client.ws.MessageEvent;
 import com.ducbase.knxplatform.gwt.client.ws.MessageHandler;
@@ -21,10 +17,6 @@ import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.dom.client.TouchStartEvent;
-import com.google.gwt.event.dom.client.TouchStartHandler;
 import com.google.gwt.http.client.UrlBuilder;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Timer;
@@ -34,20 +26,41 @@ import com.google.gwt.user.client.ui.DecoratedTabPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.Button;
 
 public class KNXUI implements EntryPoint {
 
-	private Resources resources = GWT.create(Resources.class);
-	private String baseUrl;
-	private Map<String, Device> devices = new HashMap<String, Device>();
+	private String baseServerUrl;
+	private String webSocketUrl;
+
+	TextBox tbServerUrl = new TextBox();
+	Label lblWebSocketUrl = new Label("");
 	
+	public String getBaseServerUrl() {
+		return baseServerUrl;
+	}
+
+	public void setBaseServerUrl(String baseServerUrl) {
+		this.baseServerUrl = baseServerUrl;
+		tbServerUrl.setText(baseServerUrl);
+				
+		webSocketUrl = this.baseServerUrl + "ws";
+		webSocketUrl = webSocketUrl.replaceAll("https", "wss");
+		lblWebSocketUrl.setText(webSocketUrl);
+		
+		Device.setBaseUrl(baseServerUrl); // TODO: revisit this static config mess.
+	}
+	
+	private Map<String, Device> devices = new HashMap<String, Device>();
 	
 	@Override
 	public void onModuleLoad() {
 
 		// Configure base Url of the application.  Use to configure devices.
 		// TODO: make this configurable if REST API is not with UI app.
-		baseUrl = getBaseUrl(); 
+		this.setBaseServerUrl(generateBaseUrl());
+
 		
 		RootPanel rootPanel = RootPanel.get("container");
 		rootPanel.getElement().getStyle().setPosition(Position.RELATIVE);
@@ -243,6 +256,13 @@ public class KNXUI implements EntryPoint {
 		absolutePanel.add(slWasbak, 53, 339);
 		slWasbak.setSize("30px", "30px");
 		devices.put(slWasbak.getId(), slWasbak);
+		
+		BooleanCommand gateCommand = new BooleanCommand();
+		gateCommand.setCode("6969");
+		gateCommand.setId("B7");
+		absolutePanel.add(gateCommand, 241, 593);
+		gateCommand.setSize("30px", "30px");
+		devices.put(gateCommand.getId(), gateCommand);
 		
 		AbsolutePanel absolutePanel_1 = new AbsolutePanel();
 		tabPanel.add(absolutePanel_1, "Boven", false);
@@ -511,20 +531,44 @@ public class KNXUI implements EntryPoint {
 		blPumpVerd.setSize("46px", "18px");
 		devices.put(blPumpVerd.getId(), blPumpVerd);
 		
+		Label lblDisplays = new Label("LED displays:");
+		absolutePanel_5.add(lblDisplays, 315, 89);
+		lblDisplays.setSize("123px", "18px");
+		
+		SwitchedLight ledLight = new SwitchedLight();
+		ledLight.setId("B6");
+		absolutePanel_5.add(ledLight, 404, 84);
+		ledLight.setSize("30px", "30px");
+		devices.put(ledLight.getId(), ledLight);
+		
+		Label lblServerUrl = new Label("ServerUrl:");
+		absolutePanel_5.add(lblServerUrl, 10, 346);
+		lblServerUrl.setSize("88px", "18px");
+		
+		// Server Url text box (initialized at the top!)
+		absolutePanel_5.add(tbServerUrl, 105, 343);
+		tbServerUrl.setSize("303px", "16px");
+		
+		Label lblWebsocketurl = new Label("WebSocketUrl:");
+		absolutePanel_5.add(lblWebsocketurl, 10, 376);
+		lblWebsocketurl.setSize("88px", "18px");
+		
+		// Web Socket URL label (initialized at the top)
+		absolutePanel_5.add(lblWebSocketUrl, 104, 376);
+		lblWebSocketUrl.setSize("312px", "18px");
+		
+		Button btnServerUrl = new Button("Update");
+		absolutePanel_5.add(btnServerUrl, 420, 343);
+		btnServerUrl.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				setBaseServerUrl(tbServerUrl.getText());				
+			}
+		});
+		
 		tabPanel.selectTab(1); // set ground floor as default.
 
-	
-		StringBuffer wsUrl = new StringBuffer(baseUrl); 
-				wsUrl.append("ws"); // lastly append the WebSocket endpoint.
-				
-		final String url = new UrlBuilder()
-				.setProtocol("wss")
-				.setHost(Window.Location.getHostName())
-				.setPort(Integer.parseInt(Window.Location.getPort()))
-				.setPath(wsUrl.toString())
-				.buildString();
-		
-		WebSocket socket = WebSocket.create(url);
+		WebSocket socket = WebSocket.create(webSocketUrl);
 		MessageHandler handler = new MessageHandler(){
 			DateTimeFormat fmt = DateTimeFormat.getFormat("dd/MM/yyyy HH:mm:ss [zzz]");
 			int connectCount = 0;
@@ -537,8 +581,8 @@ public class KNXUI implements EntryPoint {
 			@Override
 			public void onClose(WebSocket socket) {
 				wsStatusLabel.setText("Closed, recreating...");
-								
-				socket = WebSocket.create(url);
+
+				socket = WebSocket.create(webSocketUrl);
 				socket.setOnMessage(this);
 				socket.setOnClose(this);
 				socket.setOnError(this);
@@ -593,14 +637,18 @@ public class KNXUI implements EntryPoint {
 			5 * 60 * 1000); // every 5 minutes. 			
 	}
 
-	private String getBaseUrl() {
+	private String generateBaseUrl() {
 		String[] pathArray = Window.Location.getPath().split("/");
-		StringBuffer tempUrl = new StringBuffer();
+		StringBuffer newUrl = new StringBuffer();
+		newUrl.append(Window.Location.getProtocol()).append("//");
+		newUrl.append(Window.Location.getHostName()).append(':');
+		newUrl.append(Window.Location.getPort());
+		
 		for ( int i = 0; i < pathArray.length -1 ; i++ ) { // don't include the last part (which is index.html)
-			tempUrl.append(pathArray[i]);
-			tempUrl.append('/');
-		}		
-		return tempUrl.toString();
+			newUrl.append(pathArray[i]);
+			newUrl.append('/');
+		}				
+		return newUrl.toString();
 	}
 	
 

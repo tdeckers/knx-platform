@@ -353,7 +353,7 @@ public class KNXAdapter {
 			WebSocketManager wsMgr = WebSocketManager.getInstance();
 			wsMgr.broadcast(json);
 			
-		} catch (JAXBException|IOException e) {
+		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -57,12 +57,16 @@ public class WebSocketManager {
 		return connectionPrefix + connectionIds.getAndIncrement();
 	}
 
-	public void broadcast(String json) throws IOException {
+	public void broadcast(String json)  {
 		for(UIMessage inbound: connections) {
-			logger.fine("Broadcasting to " + inbound.getId());
-			WsOutbound outbound = inbound.getWsOutbound();
-			outbound.writeTextMessage(CharBuffer.wrap(json.toCharArray()));
-			outbound.flush();
+			try {
+				logger.fine("Broadcasting to " + inbound.getId());
+				WsOutbound outbound = inbound.getWsOutbound();
+				outbound.writeTextMessage(CharBuffer.wrap(json.toCharArray()));
+				outbound.flush();
+			} catch (IOException ioe) {
+				logger.warning("Fails to broadcast to " + inbound.getId() + ": " + ioe.getMessage() );
+			}
 		}		
 	}
 

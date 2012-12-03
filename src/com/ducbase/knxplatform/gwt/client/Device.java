@@ -1,5 +1,6 @@
 package com.ducbase.knxplatform.gwt.client;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 
@@ -8,16 +9,19 @@ public abstract class Device extends Composite {
 	private String id;
 	private static String urlBase;
 	
-	static {
-		String[] pathArray = Window.Location.getPath().split("/");
-		StringBuffer tempUrl = new StringBuffer();
-		for ( int i = 0; i < pathArray.length -1 ; i++ ) { // don't include the last part (which is index.html)
-			tempUrl.append(pathArray[i]);
-			tempUrl.append('/');
-		}		
-		tempUrl.append("rest/devices/");
-		Device.urlBase = tempUrl.toString();
-
+//	static {
+//		String[] pathArray = Window.Location.getPath().split("/");
+//		StringBuffer tempUrl = new StringBuffer();
+//		for ( int i = 0; i < pathArray.length -1 ; i++ ) { // don't include the last part (which is index.html)
+//			tempUrl.append(pathArray[i]);
+//			tempUrl.append('/');
+//		}		
+//		tempUrl.append("rest/devices/");
+//		Device.urlBase = tempUrl.toString();
+//	}
+	
+	public static void setBaseUrl(String param) {
+		Device.urlBase = param + "rest/devices/";
 	}
 	
 	public Device() {
@@ -41,6 +45,6 @@ public abstract class Device extends Composite {
 			return null;
 		}
 	}
-
+	
 
 }

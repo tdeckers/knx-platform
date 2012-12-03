@@ -79,7 +79,7 @@ public class KNXSwitched extends Switched implements KNXDevice {
 	@Override
 	public Boolean isOn() {
 		if (this.isWriteonly()) {
-			throw new RuntimeException(this.getId() + " is write only.");
+			return false; // avoid cache read when readonly.
 		}
 		
 		String stateString = adapter.getValueForGroupAddress(stateGroup);
@@ -124,8 +124,8 @@ public class KNXSwitched extends Switched implements KNXDevice {
 
 	@Override
 	public void update(JSONObject object) throws DeviceException {
-		if (this.isWriteonly()) {
-			return; // no updates expected!
+		if (this.isReadonly()) {
+			return; // no updates expected (on the server that is!)
 		}
 		
 		boolean on;
