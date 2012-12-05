@@ -260,6 +260,7 @@ public class KNXAdapter {
 						logger.warning("Link closed! Let's reconnect. (" + e.getReason() + " | " + e.getSource().toString() + ")");
 						try {Thread.sleep(5 * 1000); } catch (Exception ex) {}; // wait 5 seconds to avoid frantic reconnect.
 						connect();
+						return;
 					}
 					if (!link.isOpen()) {
 						logger.severe("KNX Link lost!");

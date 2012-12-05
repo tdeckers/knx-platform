@@ -1,6 +1,5 @@
 package com.ducbase.knxplatform.gwt.client;
 
-import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,27 +10,27 @@ import com.ducbase.knxplatform.gwt.client.ws.MessageHandler;
 import com.ducbase.knxplatform.gwt.client.ws.WebSocket;
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.http.client.UrlBuilder;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
+import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DecoratedTabPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.ui.CheckBox;
 
 public class KNXUI implements EntryPoint {
 
@@ -41,10 +40,14 @@ public class KNXUI implements EntryPoint {
 	TextBox tbServerUrl = new TextBox();
 	Label lblWebSocketUrl = new Label("");
 	
+	private int selectedTab;
+	
+	DecoratedTabPanel tabPanel = new DecoratedTabPanel();
+
 	public String getBaseServerUrl() {
 		return baseServerUrl;
-	}
-
+	}	
+	
 	public void setBaseServerUrl(String baseServerUrl) {
 		this.baseServerUrl = baseServerUrl;
 		tbServerUrl.setText(baseServerUrl);
@@ -69,11 +72,18 @@ public class KNXUI implements EntryPoint {
 		RootPanel rootPanel = RootPanel.get("container");
 		rootPanel.getElement().getStyle().setPosition(Position.RELATIVE);
 		rootPanel.setSize("600px", "700px");
-		
-		DecoratedTabPanel tabPanel = new DecoratedTabPanel();
+				
 		tabPanel.setAnimationEnabled(true);
 		rootPanel.add(tabPanel, 0, 0);
 		tabPanel.setSize("630px", "700px");
+		
+		tabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
+			
+			@Override
+			public void onSelection(SelectionEvent<Integer> event) {
+				selectedTab = event.getSelectedItem();	
+			}
+		});
 		
 		AbsolutePanel absolutePanel_2 = new AbsolutePanel();
 		tabPanel.add(absolutePanel_2, "Kelder", false);
@@ -580,7 +590,8 @@ public class KNXUI implements EntryPoint {
 			}
 		});
 		
-		tabPanel.selectTab(1); // set ground floor as default.
+		
+		tabPanel.selectTab(1); // set groundfloor as default.
 
 		WebSocket socket = WebSocket.create(webSocketUrl);
 		MessageHandler handler = new MessageHandler(){
@@ -654,7 +665,7 @@ public class KNXUI implements EntryPoint {
 			}}, 
 			5 * 60 * 1000); // every 5 minutes. 			
 	}
-
+	
 	private String generateBaseUrl() {
 		String[] pathArray = Window.Location.getPath().split("/");
 		StringBuffer newUrl = new StringBuffer();
@@ -672,6 +683,12 @@ public class KNXUI implements EntryPoint {
 	HashSet<Widget> shaking = new HashSet<Widget>(); // keep track of who's shaking.  Can't double shake!
 	
 	private void shakeWidget(Widget widget) {
+		Widget parent = widget.getParent();
+		if (parent != tabPanel.getWidget(selectedTab)) {
+			// we're not in sight... don't bother shaking.
+			return;
+		}
+		
 		if (!shaking.contains(widget)) {  // only shake if we're not shaking.
 			ShakeAnimation animation = new ShakeAnimation(widget);
 			animation.run(400);
@@ -692,6 +709,7 @@ public class KNXUI implements EntryPoint {
 				widget = w;				
 				initialX = panel.getWidgetLeft(w);
 				initialY = panel.getWidgetTop(w);
+				GWT.log("X: " + initialX + ", Y: " + initialY);
 			}			
 		}
 		
