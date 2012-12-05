@@ -21,6 +21,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
@@ -691,7 +693,7 @@ public class KNXUI implements EntryPoint {
 		
 		if (!shaking.contains(widget)) {  // only shake if we're not shaking.
 			ShakeAnimation animation = new ShakeAnimation(widget);
-			animation.run(400);
+			animation.run(750);
 		}
 	}
 	
@@ -706,10 +708,9 @@ public class KNXUI implements EntryPoint {
 			Widget parent =  w.getParent();
 			if (parent instanceof AbsolutePanel) {
 				panel = (AbsolutePanel) parent;
-				widget = w;				
+				widget = w;		
 				initialX = panel.getWidgetLeft(w);
 				initialY = panel.getWidgetTop(w);
-				GWT.log("X: " + initialX + ", Y: " + initialY);
 			}			
 		}
 		
@@ -720,23 +721,31 @@ public class KNXUI implements EntryPoint {
 		protected void onComplete() {
 			shaking.remove(widget);
 			panel.setWidgetPosition(widget, initialX, initialY);  // make sure we're back to where we were.
+			rotate(widget.getElement(), 0);
 		}
 		
 		protected void onCancel() {
 			shaking.remove(widget);
 			panel.setWidgetPosition(widget, initialX, initialY); // make sure we're back to where we were.
+			rotate(widget.getElement(), 0);
 		}
 		
 		@Override
 		protected void onUpdate(double progress) {
-			int offsetX = Math.round((float) Math.sin(Math.PI * progress * 4) * factor);
-			int offsetY = Math.round((float) Math.sin(Math.PI * progress * 2) * factor);
-			panel.setWidgetPosition(widget, initialX + offsetX, initialY - offsetY);			
+			int offsetX = Math.round((float) Math.sin(Math.PI * progress * 2) * factor);
+			int offsetY = Math.round((float) (Math.cos(Math.PI * progress * 2) - 1) * factor);
+			panel.setWidgetPosition(widget, initialX - offsetX, initialY - offsetY);
+			// TODO: switch to cos for X and sin for Y.
+			//rotate(widget.getElement(), Math.round( (float) (Math.atan2(offsetY - initialY, offsetX - initialX) * 180 / Math.PI)) );
+			rotate(widget.getElement(), 2 * Math.PI * progress);
 		}
 		
 	}
 	
-
+	final static native void rotate(Element element, double rotation) /*-{
+		 element.style['-webkit-transform'] = 'rotate(-' + rotation + 'rad)';
+	}-*/;
+	
 	static public class DeviceVO extends JavaScriptObject {
 		
 		// Overlay types always have protected, zero argument constructors.
