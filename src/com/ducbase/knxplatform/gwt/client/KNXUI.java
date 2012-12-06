@@ -15,12 +15,14 @@ import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.dom.client.AudioElement;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.media.client.Audio;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
@@ -45,6 +47,7 @@ public class KNXUI implements EntryPoint {
 	private int selectedTab;
 	
 	DecoratedTabPanel tabPanel = new DecoratedTabPanel();
+	Audio audio;
 
 	public String getBaseServerUrl() {
 		return baseServerUrl;
@@ -70,6 +73,12 @@ public class KNXUI implements EntryPoint {
 		// TODO: make this configurable if REST API is not with UI app.
 		this.setBaseServerUrl(generateBaseUrl());
 
+		audio = Audio.createIfSupported();
+		if (audio != null) {
+			audio.addSource("img/click.mp3", AudioElement.TYPE_MP3);
+			audio.load();
+			audio.play();
+		}
 		
 		RootPanel rootPanel = RootPanel.get("container");
 		rootPanel.getElement().getStyle().setPosition(Position.RELATIVE);
@@ -633,6 +642,7 @@ public class KNXUI implements EntryPoint {
 					// let's add some movement magic!
 					if (chkAnimations.getValue()) {
 						shakeWidget(device.asWidget());
+						audio.play();
 					}
 				} catch (Exception e) {
 					msgLabel.setText("WS EXCEPTION: " + e.getMessage());
