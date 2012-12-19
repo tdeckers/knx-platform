@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServer;
@@ -225,7 +226,14 @@ public class KNXAdapter {
 		InetAddress localAddress = null;
 		try {
 			String hostName = InetAddress.getLocalHost().getHostName();
-			InetAddress addrs[] = InetAddress.getAllByName(hostName);			
+			InetAddress addrs[] = InetAddress.getAllByName(hostName);	
+			if (addrs != null && logger.isLoggable(Level.FINE)) {  // only run this if logging fine.
+				String msg = "Hostname: " + hostName + ", got " + addrs.length + " address(es)";
+				for (InetAddress a: addrs) {
+					msg += " - " + a.getHostAddress();
+				}
+				logger.fine(msg);
+			}
 			for(InetAddress addr: addrs) {
 				// TODO: hardcoding to my subnet, change to more flexible mechanism later.
 				//if( !addr.isLoopbackAddress() && addr.isSiteLocalAddress() ) {
@@ -240,7 +248,6 @@ public class KNXAdapter {
 			return;
 		}
 		logger.info("Using ip address: " + localAddress.getHostAddress());
-
 		if (link != null) { // cleanup in case we've been here before.
 			link.close();			
 		}
