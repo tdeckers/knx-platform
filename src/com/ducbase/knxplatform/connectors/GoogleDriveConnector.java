@@ -79,8 +79,7 @@ public class GoogleDriveConnector {
 	
 	public static GoogleDriveConnector getInstance() throws GeneralSecurityException, IOException, ServiceException {
 		initialize();
-		return instance;
-		
+		return instance;		
 	}	
 
 	public void upload(HashMap<String, String> values) throws IOException, ServiceException {

@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 import javax.management.MBeanServer;
 import javax.xml.bind.JAXBException;
 
+import org.jivesoftware.smack.XMPPException;
+
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
@@ -44,6 +46,7 @@ import com.ducbase.knxplatform.adapters.devices.KNXShutter;
 import com.ducbase.knxplatform.adapters.devices.KNXSwitched;
 import com.ducbase.knxplatform.adapters.devices.KNXTemperatureSensor;
 import com.ducbase.knxplatform.adapters.devices.KNXThermostat;
+import com.ducbase.knxplatform.connectors.GoogleTalkConnector;
 import com.ducbase.knxplatform.devices.Device;
 import com.ducbase.knxplatform.devices.DeviceManager;
 import com.sun.jersey.api.json.JSONJAXBContext;
@@ -347,6 +350,25 @@ public class KNXAdapter {
 		String deviceId = listenFor.get(groupAddress);
 		DeviceManager deviceManager = DeviceManager.getInstance();
 		Device device = deviceManager.getDevice(deviceId);
+		
+		// TODO - this should change in Events and subscribing to Events!
+		// B2 - Woning volledig
+		// B3 - Woning gedeeltelijk
+		// 0/1/3 - Brand
+		// 0/1/4 - Alarm
+		try {
+			if (device.getId().equals("B2")) {
+				boolean on = ((KNXSwitched) device).isOn();
+				GoogleTalkConnector.getInstance().sendMessage("Alarm " + (on ? "on":"off"));
+			}
+			if (device.getId().equals("B3")) {
+				boolean on = ((KNXSwitched) device).isOn();	
+				GoogleTalkConnector.getInstance().sendMessage("Alarm (partial) " + (on ? "on":"off"));
+			}
+		} catch (XMPPException e) {
+			logger.severe("Unable to send message.");
+		}					
+		// END TODO
 		
 		// device -> JSON
 		Class[] classes = new Class[] {KNXSwitched.class, KNXDimmedLight.class, KNXTemperatureSensor.class, KNXThermostat.class, KNXShutter.class};

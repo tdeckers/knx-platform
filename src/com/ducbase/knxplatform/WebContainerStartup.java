@@ -10,6 +10,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.xml.bind.JAXBException;
 
+import org.jivesoftware.smack.XMPPException;
 import org.quartz.Job;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
@@ -26,6 +27,7 @@ import tuwien.auto.calimero.log.LogService;
 import com.ducbase.knxplatform.adapters.KNXAdapter;
 import com.ducbase.knxplatform.config.ConfigManager;
 import com.ducbase.knxplatform.connectors.GoogleDriveConnector;
+import com.ducbase.knxplatform.connectors.GoogleTalkConnector;
 import com.ducbase.knxplatform.scheduling.GoogleUploadJob;
 import com.ducbase.knxplatform.scheduling.KNXAdapterCheckJob;
 import com.google.gdata.util.ServiceException;
@@ -65,6 +67,14 @@ public class WebContainerStartup implements ServletContextListener {
 		} catch (GeneralSecurityException | IOException | ServiceException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		
+		logger.info("Connecting to Google Talk");
+		try {
+			GoogleTalkConnector.initialize();
+		} catch (XMPPException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 				
 		try {
