@@ -77,6 +77,7 @@ public class KNXUI implements EntryPoint {
 		if (audio != null) {
 			audio.addSource("img/click.mp3", AudioElement.TYPE_MP3);
 			audio.load();
+			audio.setVolume(0.5);
 			audio.play();
 		}
 		
@@ -639,10 +640,15 @@ public class KNXUI implements EntryPoint {
 					Device device = devices.get(id);
 					device.update(data);
 					msgLabel.setText(fmt.format(new Date()) + " - Updated device " + id);
+					
 					// let's add some movement magic!
-					if (chkAnimations.getValue()) {
+					Widget widget = device.asWidget();
+					Widget parent = widget.getParent();
+					if (chkAnimations.getValue() &&						  // only when box is checked
+							parent == tabPanel.getWidget(selectedTab)) {  // ... and we're in sight.
+						
 						shakeWidget(device.asWidget());
-						audio.play();
+						audio.play();						
 					}
 				} catch (Exception e) {
 					msgLabel.setText("WS EXCEPTION: " + e.getMessage());
@@ -695,12 +701,6 @@ public class KNXUI implements EntryPoint {
 	HashSet<Widget> shaking = new HashSet<Widget>(); // keep track of who's shaking.  Can't double shake!
 	
 	private void shakeWidget(Widget widget) {
-		Widget parent = widget.getParent();
-		if (parent != tabPanel.getWidget(selectedTab)) {
-			// we're not in sight... don't bother shaking.
-			return;
-		}
-		
 		if (!shaking.contains(widget)) {  // only shake if we're not shaking.
 			ShakeAnimation animation = new ShakeAnimation(widget);
 			animation.run(750);
