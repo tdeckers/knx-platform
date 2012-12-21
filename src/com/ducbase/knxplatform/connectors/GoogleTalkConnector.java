@@ -41,13 +41,13 @@ public class GoogleTalkConnector implements ConnectionListener, ChatManagerListe
 		String server = config.getProperty(SERVER_PROP);
 		String service = config.getProperty(SERVICE_PROP);
 		ConnectionConfiguration xmppconfig = new ConnectionConfiguration(server, 5222, service);
-		logger.fine("XMPP server: " + server + ", service: " + service);
+		logger.info("XMPP server: " + server + ", service: " + service);
 		conn = new XMPPConnection(xmppconfig);
 		conn.connect();
 		String username = config.getProperty(USERNAME_PROP);
 		String password = config.getProperty(PASSWORD_PROP);
 		String resource = config.getProperty(RESOURCE_PROP);
-		logger.fine("XMPP username: " + username + ", resource: " + resource);
+		logger.info("XMPP username: " + username + ", resource: " + resource);
 		conn.login(username, password, resource);
 		conn.addConnectionListener(this);
 		conn.getChatManager().addChatListener(this);
