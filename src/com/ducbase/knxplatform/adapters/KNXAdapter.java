@@ -365,8 +365,8 @@ public class KNXAdapter {
 				boolean on = ((KNXSwitched) device).isOn();	
 				GoogleTalkConnector.getInstance().sendMessage("Alarm (partial) " + (on ? "on":"off"));
 			}
-		} catch (XMPPException e) {
-			logger.severe("Unable to send message.");
+		} catch (XMPPException | IOException e) {
+			logger.severe("Unable to send message: " + e.getMessage());
 		}					
 		// END TODO
 		

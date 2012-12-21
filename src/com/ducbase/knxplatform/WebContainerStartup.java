@@ -46,8 +46,9 @@ public class WebContainerStartup implements ServletContextListener {
 		logger.info("Initializing context");
 		
 		try {
-			ConfigManager.loadDevices();
-		} catch (FileNotFoundException | JAXBException e) {
+			ConfigManager config = ConfigManager.getInstance();
+			config.loadDevices();
+		} catch (JAXBException | IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Config failure", e);
 		}
@@ -72,7 +73,7 @@ public class WebContainerStartup implements ServletContextListener {
 		logger.info("Connecting to Google Talk");
 		try {
 			GoogleTalkConnector.initialize();
-		} catch (XMPPException e1) {
+		} catch (XMPPException | IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}

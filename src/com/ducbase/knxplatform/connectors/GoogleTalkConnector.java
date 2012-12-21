@@ -15,6 +15,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
 import com.ducbase.knxplatform.adapters.devices.KNXSwitched;
+import com.ducbase.knxplatform.config.ConfigManager;
 import com.ducbase.knxplatform.devices.Device;
 import com.ducbase.knxplatform.devices.DeviceManager;
 
@@ -26,17 +27,33 @@ public class GoogleTalkConnector implements ConnectionListener, ChatManagerListe
 	
 	private static GoogleTalkConnector instance;
 	private Connection conn;
+	private ConfigManager config = null;
 	
-	private GoogleTalkConnector() throws XMPPException {
-		ConnectionConfiguration config = new ConnectionConfiguration("talk.google.com", 5222, "ducbase.com");
-		conn = new XMPPConnection(config);
+	final static private String PIN_PROP = "talk.pin";
+	final static private String SERVER_PROP = "talk.server";
+	final static private String SERVICE_PROP = "talk.service";
+	final static private String USERNAME_PROP = "talk.username";
+	final static private String PASSWORD_PROP = "talk.password";
+	final static private String RESOURCE_PROP = "talk.resource";
+	
+	private GoogleTalkConnector() throws XMPPException, IOException {
+		config = ConfigManager.getInstance();
+		String server = config.getProperty(SERVER_PROP);
+		String service = config.getProperty(SERVICE_PROP);
+		ConnectionConfiguration xmppconfig = new ConnectionConfiguration(server, 5222, service);
+		logger.fine("XMPP server: " + server + ", service: " + service);
+		conn = new XMPPConnection(xmppconfig);
 		conn.connect();
-		conn.login("knx@ducbase.com", "luke008+", "knxplatform");
+		String username = config.getProperty(USERNAME_PROP);
+		String password = config.getProperty(PASSWORD_PROP);
+		String resource = config.getProperty(RESOURCE_PROP);
+		logger.fine("XMPP username: " + username + ", resource: " + resource);
+		conn.login(username, password, resource);
 		conn.addConnectionListener(this);
 		conn.getChatManager().addChatListener(this);
 	}
 	
-	public static void initialize() throws XMPPException {
+	public static void initialize() throws XMPPException, IOException {
 		if (instance == null) {
 			synchronized(GoogleTalkConnector.class) {
 				if (instance == null) {
@@ -46,7 +63,7 @@ public class GoogleTalkConnector implements ConnectionListener, ChatManagerListe
 		}
 	}
 	
-	public static GoogleTalkConnector getInstance() throws XMPPException {
+	public static GoogleTalkConnector getInstance() throws XMPPException, IOException {
 		initialize();
 		return instance;		
 	}		
@@ -101,14 +118,36 @@ public class GoogleTalkConnector implements ConnectionListener, ChatManagerListe
 
 	@Override
 	public void processMessage(Chat chat, Message message) {
+		String pin = config.getProperty(PIN_PROP);
 		String text = message.getBody();
-		if (text.equalsIgnoreCase("gate 6969")) {
+		if (text.equalsIgnoreCase("gate " + pin)) {
 			DeviceManager deviceManager = DeviceManager.getInstance();
 			Device device = deviceManager.getDevice("B7"); // B7 is gate.
 			((KNXSwitched) device).turnOn();
 			try {Thread.sleep(500);} catch(Exception e) {};
 			((KNXSwitched) device).turnOff();
 			logger.info("Gate opened");
+		} else if (text.toLowerCase().contains("alarm")) {
+			DeviceManager deviceManager = DeviceManager.getInstance();
+			KNXSwitched alarm = (KNXSwitched) deviceManager.getDevice("B2");
+			KNXSwitched alarmPartial = (KNXSwitched) deviceManager.getDevice("B3");
+			try {
+				if (alarm.isOn()) {
+					chat.sendMessage("Alarm armed!");
+				} else if (alarmPartial.isOn()) {
+					chat.sendMessage("Alarm is partially armed!");
+				} else {
+					chat.sendMessage("Alarm is not armed.");
+				}
+			} catch(XMPPException e) {
+				logger.warning("Failed to respond: " + e.getMessage());
+			}
+		} else {
+			try {
+				chat.sendMessage("Huh?");
+			} catch (XMPPException e) {
+				logger.warning("Failed to respond: " + e.getMessage());
+			}
 		}
 	}	
 

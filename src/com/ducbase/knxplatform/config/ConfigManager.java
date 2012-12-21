@@ -3,6 +3,8 @@ package com.ducbase.knxplatform.config;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBException;
@@ -19,17 +21,40 @@ import com.sun.jersey.api.json.JSONUnmarshaller;
 public class ConfigManager {
 	
 	private static final Logger logger = Logger.getLogger(ConfigManager.class.getName());
-	private static final String configFilename = "devices.json";
+	private static final String deviceConfig = "devices.json";
 	
-	public ConfigManager() {
-		
+	private static final String generalConfig = "knx.conf";
+	
+	private Properties properties = new Properties();
+	
+	private static ConfigManager instance;
+	
+	private ConfigManager() throws IOException {
+		File file = new File(generalConfig);
+		FileReader reader = new FileReader(file);
+		properties.load(reader);
 	}
 	
-	public static void loadDevices() throws JAXBException, FileNotFoundException {
+	public static ConfigManager getInstance() throws IOException {
+		if (instance == null) {
+			synchronized(ConfigManager.class) {
+				if (instance == null) {
+					instance = new ConfigManager();
+				}
+			}
+		}
+		return instance;
+	}
+	
+	public String getProperty(String key) {
+		return properties.getProperty(key, "");
+	}
+	
+	public void loadDevices() throws JAXBException, FileNotFoundException {
 		JSONJAXBContext context = new JSONJAXBContext(Config.class);
 		JSONUnmarshaller um = context.createJSONUnmarshaller();
 				
-		File configFile = new File(configFilename);
+		File configFile = new File(deviceConfig);
 		logger.fine("Using config file: " + configFile.getAbsolutePath());		
 		FileReader reader = new FileReader(configFile);
 		Config config = (Config) um.unmarshalFromJSON(reader, Config.class);

@@ -25,13 +25,6 @@ public class Main {
 	public static void main(String[] args) {
 		logger.info("Starting");
 		
-		try {
-			ConfigManager.loadDevices();
-		} catch (JAXBException | FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 	}
 
 }
