@@ -361,10 +361,11 @@ public class KNXAdapter {
 				boolean on = ((KNXSwitched) device).isOn();
 				GoogleTalkConnector.getInstance().sendMessage("Alarm " + (on ? "on":"off"));
 			}
-			if (device.getId().equals("B3")) {
-				boolean on = ((KNXSwitched) device).isOn();	
-				GoogleTalkConnector.getInstance().sendMessage("Alarm (partial) " + (on ? "on":"off"));
-			}
+// Let's not send chat messages for partial alarm... annoying!
+//			if (device.getId().equals("B3")) {
+//				boolean on = ((KNXSwitched) device).isOn();	
+//				GoogleTalkConnector.getInstance().sendMessage("Alarm (partial) " + (on ? "on":"off"));
+//			}
 		} catch (XMPPException | IOException e) {
 			logger.severe("Unable to send message: " + e.getMessage());
 		}					
