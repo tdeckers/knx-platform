@@ -553,15 +553,15 @@ public class KNXUI implements EntryPoint {
 		final Label wsStatusLabel = new Label("...");
 		absolutePanel_5.add(wsStatusLabel, 143, 34);
 		
-		Label lblPumpVerd = new Label("Pomp verdieping:");
-		absolutePanel_5.add(lblPumpVerd, 10, 198);
-		lblPumpVerd.setSize("123px", "18px");
+		Label lblPumpGelijk = new Label("Pomp gelijkvloers:");
+		absolutePanel_5.add(lblPumpGelijk, 10, 198);
+		lblPumpGelijk.setSize("123px", "18px");
 		
-		BooleanStatus blPumpVerd = new BooleanStatus();
-		blPumpVerd.setId("B5");
-		absolutePanel_5.add(blPumpVerd, 152, 198);
-		blPumpVerd.setSize("46px", "18px");
-		devices.put(blPumpVerd.getId(), blPumpVerd);
+		BooleanStatus blPumpGelijk = new BooleanStatus();
+		blPumpGelijk.setId("B8");
+		absolutePanel_5.add(blPumpGelijk, 152, 198);
+		blPumpGelijk.setSize("46px", "18px");
+		devices.put(blPumpGelijk.getId(), blPumpGelijk);
 		
 		Label lblDisplays = new Label("LED displays:");
 		absolutePanel_5.add(lblDisplays, 315, 89);
@@ -595,6 +595,17 @@ public class KNXUI implements EntryPoint {
 		final CheckBox chkAnimations = new CheckBox("New check box");
 		chkAnimations.setHTML("Animations");
 		absolutePanel_5.add(chkAnimations, 10, 277);
+		
+		Label lblPumpVerd = new Label("Pomp verdieping:");
+		absolutePanel_5.add(lblPumpVerd, 10, 222);
+		lblPumpVerd.setSize("123px", "18px");
+		
+		BooleanStatus blPumpVerd = new BooleanStatus();
+		blPumpVerd.setId("B5");
+		absolutePanel_5.add(blPumpVerd, 152, 222);
+		blPumpVerd.setSize("46px", "18px");
+		devices.put(blPumpVerd.getId(), blPumpVerd);
+		
 		btnServerUrl.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
